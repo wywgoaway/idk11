@@ -3,39 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Capture Background</title>
-    <style>
-        body {
-            margin: 0;
-            background-color: #000;
-            overflow: hidden;
-            background-size: cover;
-            background-position: center;
-        }
-        #capture-container {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #video {
-            display: none;
-        }
-    </style>
+    <title>Webcam Capture</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="capture-container">
         <video id="video" autoplay></video>
         <canvas id="capture-canvas"></canvas>
     </div>
+    <img id="captured-image" style="display:none;" />
 
-    <!-- Link to the JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
