@@ -5,20 +5,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class WebcamCaptureExample {
+public class WebcamCaptureBar {
 
     private JFrame frame;
-    private JLabel imageLabel;
+    private JLabel captureBarLabel;
     private Webcam webcam;
+    private Timer timer;
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new WebcamCaptureExample().createAndShowGUI());
+        SwingUtilities.invokeLater(() -> new WebcamCaptureBar().createAndShowGUI());
     }
 
     public void createAndShowGUI() {
-        frame = new JFrame("Webcam Capture Example");
+        frame = new JFrame("Webcam Capture Bar");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(800, 200);
         frame.setLayout(new BorderLayout());
 
         // Initialize webcam
@@ -36,25 +37,39 @@ public class WebcamCaptureExample {
             return;
         }
 
-        // Create and add components
-        imageLabel = new JLabel();
-        frame.add(imageLabel, BorderLayout.CENTER);
+        // Create capture bar
+        JPanel captureBar = new JPanel();
+        captureBar.setPreferredSize(new Dimension(frame.getWidth(), 200));
+        captureBar.setLayout(new BorderLayout());
+        captureBar.setBackground(Color.BLACK);
+        
+        captureBarLabel = new JLabel();
+        captureBarLabel.setPreferredSize(new Dimension(frame.getWidth(), 200));
+        captureBarLabel.setHorizontalAlignment(JLabel.CENTER);
+        captureBarLabel.setVerticalAlignment(JLabel.CENTER);
+        captureBarLabel.setOpaque(true);
+        captureBarLabel.setBackground(Color.BLACK);
+        
+        captureBar.add(captureBarLabel, BorderLayout.CENTER);
+        
+        // Add capture bar to frame
+        frame.add(captureBar, BorderLayout.NORTH);
 
-        // Capture image
-        captureAndShowImage();
+        // Timer to update image from webcam
+        timer = new Timer(30, e -> updateCaptureBar());
+        timer.start();
 
         // Display the frame
         frame.setVisible(true);
     }
 
-    private void captureAndShowImage() {
-        // Capture the image from the webcam
-        BufferedImage image = webcam.getImage();
-        if (image != null) {
-            ImageIcon icon = new ImageIcon(image);
-            imageLabel.setIcon(icon);
-        } else {
-            JOptionPane.showMessageDialog(frame, "Failed to capture image", "Error", JOptionPane.ERROR_MESSAGE);
+    private void updateCaptureBar() {
+        if (webcam != null) {
+            BufferedImage image = webcam.getImage();
+            if (image != null) {
+                ImageIcon icon = new ImageIcon(image.getScaledInstance(captureBarLabel.getWidth(), captureBarLabel.getHeight(), Image.SCALE_SMOOTH));
+                captureBarLabel.setIcon(icon);
+            }
         }
     }
 }
