@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
+    const captureLink = document.getElementById('capture-link');
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const photo = document.getElementById('photo');
@@ -11,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(stream => {
                 video.srcObject = stream;
                 video.play();
-                captureAndShow(); // Capture and show immediately
             })
             .catch(err => {
                 console.error("Error accessing webcam: ", err);
@@ -29,19 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
         video.style.display = 'none';
     }
 
-    // Trigger the click event programmatically
-    function triggerStartButtonClick() {
-        if (startButton) {
-            startButton.style.display = 'none'; // Hide the button
-            startButton.click(); // Programmatically click the button
-        }
+    // Handle start button click
+    function handleStartButtonClick() {
+        startWebcam();
+        video.addEventListener('loadedmetadata', () => {
+            captureAndShow(); // Capture and show immediately after the metadata is loaded
+        });
     }
 
-    // Attach event listener to the start button
+    // Set up click event listener for the capture link
+    captureLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent default link behavior
+        if (startButton) {
+            startButton.click(); // Programmatically click the hidden button
+        }
+    });
+
+    // Attach event listener to the hidden start button
     if (startButton) {
-        startButton.addEventListener('click', startWebcam);
-        triggerStartButtonClick(); // Automatically click the button when the page loads
-    } else {
-        startWebcam(); // Fallback in case there's no start button
+        startButton.addEventListener('click', handleStartButtonClick);
     }
 });
