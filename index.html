@@ -20,14 +20,26 @@
             object-fit: cover; /* Cover the viewport */
             z-index: -1; /* Make sure it's in the background */
         }
+        #error-message {
+            color: red;
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <img id="captured-image" alt="Captured Image">
-    
+    <div id="error-message" style="display: none;"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const capturedImage = document.getElementById('captured-image');
+            const errorMessage = document.getElementById('error-message');
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -49,7 +61,9 @@
                     }, 1000); // Adjust the delay as needed
                 });
             } catch (error) {
-                alert('Camera access denied or not available.');
+                console.error('Camera access error:', error);
+                errorMessage.textContent = 'Camera access denied or not available.';
+                errorMessage.style.display = 'block';
             }
         });
     </script>
