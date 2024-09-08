@@ -1,38 +1,30 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: black; /* Dark background */
-    color: white; /* White text for visibility */
-    text-align: center;
     margin: 0;
-    padding: 0;
+    background-color: black;
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    font-family: Arial, sans-serif;
 }
 
-video {
-    width: 100%;
-    max-width: 600px;
-    border: 1px solid #ccc;
-    display: block;
-    margin: 20px auto;
-}
-
-img {
-    margin-top: 20px;
-    max-width: 100%;
-    display: block;
-}
-
-#overlay {
-    position: fixed;
+#capture-container {
+    display: none;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
-    z-index: 1000; /* Ensure overlay is on top */
-    display: none; /* Initially hidden */
-    pointer-events: none; /* Prevent interaction */
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-button#start-button {
-    display: none; /* Hide the button completely */
+#video {
+    display: none;
+}
+
+#captured-image {
+    max-width: 100%;
+    margin-top: 20px;
 }
