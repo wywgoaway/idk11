@@ -3,45 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Capture Bar</title>
+    <title>Full Background Webcam Capture</title>
     <style>
         body {
             margin: 0;
-            background-color: #000; /* Black background */
+            padding: 0;
             overflow: hidden; /* Hide any overflow */
-        }
-        #capture-bar {
-            width: 100%;
-            max-width: 100vw; /* Full width */
-            height: 200px; /* Bar height */
-            background-color: #333; /* Dark gray background for bar */
-            border-bottom: 5px solid #fff; /* White edge */
-            position: fixed; /* Fixed at the top */
-            top: 0;
-            left: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* Ensure content fits within the bar */
+            background-color: #000; /* Default black background */
         }
         #captured-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Cover the bar area */
+            position: fixed; /* Cover the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* Cover the viewport */
+            z-index: -1; /* Make sure it's in the background */
         }
     </style>
 </head>
 <body>
-    <div id="capture-bar">
-        <img id="captured-image" alt="Captured Image">
-    </div>
-
+    <img id="captured-image" alt="Captured Image">
+    
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const capturedImage = document.getElementById('captured-image');
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 const video = document.createElement('video');
                 video.srcObject = stream;
                 video.play();
