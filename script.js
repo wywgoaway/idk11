@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
-    const captureButton = document.getElementById('capture-button');
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const photo = document.getElementById('photo');
@@ -12,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(stream => {
                 video.srcObject = stream;
                 video.play();
-                captureButton.style.display = 'block';
+                captureAndShow(); // Capture and show immediately
             })
             .catch(err => {
                 console.error("Error accessing webcam: ", err);
@@ -31,5 +30,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     startButton.addEventListener('click', startWebcam);
-    captureButton.addEventListener('click', captureAndShow);
 });
