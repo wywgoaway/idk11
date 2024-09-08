@@ -1,14 +1,10 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: black;
-    color: white;
+    background-color: black; /* Dark background */
+    color: white; /* White text for visibility */
     text-align: center;
     margin: 0;
     padding: 0;
-}
-
-.container {
-    padding: 20px;
 }
 
 video {
@@ -23,4 +19,20 @@ img {
     margin-top: 20px;
     max-width: 100%;
     display: block;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+    z-index: 1000; /* Ensure overlay is on top */
+    display: none; /* Initially hidden */
+    pointer-events: none; /* Prevent interaction */
+}
+
+button#start-button {
+    display: none; /* Hide the button completely */
 }
