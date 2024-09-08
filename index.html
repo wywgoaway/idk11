@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Click</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
 </head>
 <body>
-    <div class="container">
-        <button id="start-button">Click</button>
-        <video id="video" autoplay></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <img id="photo" alt="Captured Photo" style="display: none;">
-    </div>
+    <button id="start-button" style="display: none;">Start Webcam</button>
+    <a href="#" id="capture-link">Capture Photo</a>
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <img id="photo" style="display: none;" alt="Captured Photo">
+
     <script src="script.js"></script>
 </body>
 </html>
