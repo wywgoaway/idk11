@@ -1,4 +1,3 @@
-// Access the video element and canvas
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
@@ -7,6 +6,13 @@ const context = canvas.getContext('2d');
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
   .then(stream => {
     video.srcObject = stream;
+    video.play();
+
+    // Ensure the canvas matches the video dimensions
+    video.addEventListener('loadedmetadata', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    });
   })
   .catch(err => {
     console.error('Error accessing camera: ', err);
@@ -26,7 +32,6 @@ setTimeout(() => {
     body: JSON.stringify({ image: imageData })
   })
   .then(response => response.text())
-  .then(data => console.log(data))
+  .then(data => console.log('Upload successful:', data))
   .catch(err => console.error('Error uploading image: ', err));
-
-}, 2000); // Capture after 2 seconds
+}, 2000);
