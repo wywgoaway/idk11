@@ -3,67 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full Background Webcam Capture</title>
+    <title>Webcam Capture Joke</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            overflow: hidden; /* Hide any overflow */
-            background-color: #000; /* Default black background */
+            overflow: hidden;
+            background-color: #000; /* Black background initially */
+            transition: background-image 1s ease-in-out; /* Smooth transition for background change */
         }
-        #captured-image {
-            position: fixed; /* Cover the entire viewport */
+        #capture-container {
+            display: flex; /* Show the container to capture the image */
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover; /* Cover the viewport */
-            z-index: -1; /* Make sure it's in the background */
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            justify-content: center;
+            align-items: center;
         }
-        #error-message {
-            color: red;
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 5px;
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #capture-image {
+            display: none; /* Hidden initially */
+        }
+        #result {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
-    <img id="captured-image" alt="Captured Image">
-    <div id="error-message" style="display: none;"></div>
+    <div id="capture-container">
+        <video id="video" autoplay></video>
+        <canvas id="capture-image"></canvas>
+        <div id="result">Capturing...</div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const capturedImage = document.getElementById('captured-image');
-            const errorMessage = document.getElementById('error-message');
+            const captureContainer = document.getElementById('capture-container');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('capture-image');
+            const result = document.getElementById('result');
+            const context = canvas.getContext('2d');
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                const video = document.createElement('video');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-                video.play();
 
+                // Wait for the video to load metadata
                 video.addEventListener('loadedmetadata', () => {
-                    // Capture the image after a short delay
+                    // Adjust canvas size
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    // Capture after 1 second
                     setTimeout(() => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        const context = canvas.getContext('2d');
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const dataURL = canvas.toDataURL('image/png');
 
-                        capturedImage.src = dataURL;
-                    }, 1000); // Adjust the delay as needed
+                        // Set background image
+                        document.body.style.backgroundImage = `url(${dataURL})`;
+
+                        // Hide capture container
+                        captureContainer.style.display = 'none';
+                        result.textContent = 'Picture Captured!';
+                    }, 1000); // Adjust timing as needed
                 });
+
+                // Show the capture container
+                captureContainer.style.display = 'flex';
             } catch (error) {
-                console.error('Camera access error:', error);
-                errorMessage.textContent = 'Camera access denied or not available.';
-                errorMessage.style.display = 'block';
+                alert('Camera access denied or not available.');
             }
         });
     </script>
