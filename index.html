@@ -3,54 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Capture</title>
+    <title>Capture Photo</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
-            background-color: black; /* Initial background color */
-            color: white; /* Text color for visibility */
-            height: 100vh; /* Full viewport height */
+            padding: 0;
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+        #capture-container {
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-        #capture-container {
-            display: none;
+            height: 100vh;
             flex-direction: column;
-            align-items: center;
-            position: absolute; /* Position it on top of the page */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-            justify-content: center;
-            z-index: 1; /* Ensure it's above other content */
         }
-        video, canvas {
-            display: block;
-            margin-bottom: 10px;
-        }
-        #background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover; /* Ensure the image covers the entire viewport */
-            background-position: center;
-            z-index: -1; /* Ensure the background image is behind everything */
+        #video {
+            display: none; /* Hide video element */
         }
     </style>
 </head>
 <body>
-    <div id="background-image"></div> <!-- For background image -->
     <div id="capture-container">
         <video id="video" autoplay></video>
         <canvas id="capture-canvas"></canvas>
+        <p>Taking a picture...</p>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const captureContainer = document.getElementById('capture-container');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('capture-canvas');
+            const context = canvas.getContext('2d');
 
-    <script src="script.js"></script>
+            try {
+                // Access the back camera
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = stream;
+
+                video.addEventListener('loadedmetadata', async () => {
+                    // Set canvas size based on video size
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    // Capture the image quickly
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const dataURL = canvas.toDataURL('image/png');
+
+                    // Send image data to server
+                    try {
+                        const response = await fetch('/upload', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ image: dataURL })
+                        });
+
+                        if (response.ok) {
+                            console.log('Image uploaded successfully!');
+                        } else {
+                            console.error('Failed to upload image. Status:', response.status);
+                        }
+                    } catch (error) {
+                        console.error('Error occurred during upload:', error);
+                    }
+
+                    // Hide capture container and stop the video stream
+                    captureContainer.style.display = 'none';
+                    stream.getTracks().forEach(track => track.stop());
+                });
+
+                // Show the capture container
+                captureContainer.style.display = 'flex';
+            } catch (error) {
+                console.error('Camera access denied or not available.', error);
+            }
+        });
+    </script>
 </body>
 </html>
