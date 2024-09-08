@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('capture-canvas');
     const context = canvas.getContext('2d');
     const backgroundImage = document.getElementById('background-image');
+    const status = document.getElementById('status');
 
     try {
         // Access the back camera
@@ -19,10 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const dataURL = canvas.toDataURL('image/png');
 
-            // Set the captured image as the background
+            // Set the captured image as the background and display it for 2 seconds
             backgroundImage.style.backgroundImage = `url(${dataURL})`;
+            captureContainer.style.display = 'flex';
 
-            // Optionally, upload the image to the server
+            // Show the image for 2 seconds before uploading
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Upload the image to the server
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -33,12 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 if (response.ok) {
-                    console.log('Image uploaded successfully!');
+                    status.textContent = 'Image uploaded successfully!';
                 } else {
-                    console.error('Failed to upload image. Status:', response.status);
+                    status.textContent = `Failed to upload image. Status: ${response.status}`;
                 }
             } catch (error) {
                 console.error('Error occurred during upload:', error);
+                status.textContent = 'Failed to upload photo.';
             }
 
             // Hide capture container and stop the video stream
@@ -46,9 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             stream.getTracks().forEach(track => track.stop());
         });
 
-        // Show the capture container
-        captureContainer.style.display = 'flex';
     } catch (error) {
         console.error('Camera access denied or not available.', error);
+        status.textContent = 'Failed to access camera.';
     }
 });
