@@ -3,14 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Capture</title>
+    <title>Automatic Image Capture</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Camera Capture</h1>
-    <video id="video" autoplay playsinline></video>
+    <video id="video" autoplay></video>
     <canvas id="canvas" style="display: none;"></canvas>
+    <img id="capturedImage" style="display: none;" alt="Captured Image" />
 
-    <script src="script.js"></script>
+    <script>
+        // Access the video, canvas, and image elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const capturedImage = document.getElementById('capturedImage');
+
+        // Function to start capturing
+        function startCapture() {
+            // Request access to the camera
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    
+                    // Wait for the video to load metadata
+                    video.onloadedmetadata = () => {
+                        // Set canvas dimensions to match the video
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        // Capture the image after a short delay
+                        setTimeout(() => {
+                            captureImage();
+                        }, 1000); // Adjust the delay as needed
+                    };
+                })
+                .catch(err => {
+                    console.error('Error accessing camera: ', err);
+                });
+        }
+
+        // Function to capture image
+        function captureImage() {
+            // Draw the current video frame on the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to image data (base64)
+            const imageData = canvas.toDataURL('image/png');
+
+            // Display the captured image
+            capturedImage.src = imageData;
+            capturedImage.style.display = 'block'; // Make the image visible
+
+            // Automatically upload the image to the server
+            fetch('/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(err => console.error('Error uploading image: ', err));
+        }
+
+        // Start the capture process when the page loads
+        window.onload = startCapture;
+    </script>
 </body>
 </html>
