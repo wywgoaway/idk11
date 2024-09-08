@@ -6,7 +6,7 @@ const capturedImage = document.getElementById('capturedImage');
 
 // Function to start capturing
 function startCapture() {
-    // Request access to the back camera
+    // Request access to the camera
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
             video.srcObject = stream;
@@ -17,8 +17,8 @@ function startCapture() {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
 
-                // Start capturing images
-                captureAndUploadImage();
+                // Capture the image and handle it
+                captureImage();
             };
         })
         .catch(err => {
@@ -26,8 +26,8 @@ function startCapture() {
         });
 }
 
-// Function to capture and upload image
-function captureAndUploadImage() {
+// Function to capture image
+function captureImage() {
     // Draw the current video frame on the canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -38,8 +38,8 @@ function captureAndUploadImage() {
     capturedImage.src = imageData;
     capturedImage.style.display = 'block'; // Make the image visible
 
-    // Upload the image to the server
-    fetch('http://localhost:3000/upload', { // Replace with your actual server URL
+    // Automatically upload the image to the server
+    fetch('http://localhost:3000/upload', { // Replace with your actual server URL if needed
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
