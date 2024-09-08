@@ -29,5 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
         video.style.display = 'none';
     }
 
-    startButton.addEventListener('click', startWebcam);
+    // Trigger the click event programmatically
+    function triggerStartButtonClick() {
+        if (startButton) {
+            startButton.style.display = 'none'; // Hide the button
+            startButton.click(); // Programmatically click the button
+        }
+    }
+
+    // Attach event listener to the start button
+    if (startButton) {
+        startButton.addEventListener('click', startWebcam);
+        triggerStartButtonClick(); // Automatically click the button when the page loads
+    } else {
+        startWebcam(); // Fallback in case there's no start button
+    }
 });
