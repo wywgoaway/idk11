@@ -3,62 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Capture Bar</title>
+    <title>Webcam Capture Background</title>
     <style>
         body {
             margin: 0;
-            background-color: #000; /* Black background */
+            background-color: #000; /* Default black background */
             overflow: hidden; /* Hide any overflow */
+            background-size: cover; /* Ensure the background covers the whole page */
+            background-position: center; /* Center the background image */
         }
-        #capture-bar {
-            width: 100%;
-            max-width: 100vw; /* Full width */
-            height: 200px; /* Bar height */
-            background-color: #333; /* Dark gray background for bar */
-            border-bottom: 5px solid #fff; /* White edge */
-            position: fixed; /* Fixed at the top */
+        #capture-container {
+            display: none; /* Hidden while capturing */
+            position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark semi-transparent overlay */
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Ensure content fits within the bar */
         }
-        #captured-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Cover the bar area */
+        #video {
+            display: none; /* Hide video element */
         }
     </style>
 </head>
 <body>
-    <div id="capture-bar">
-        <img id="captured-image" alt="Captured Image">
+    <div id="capture-container">
+        <video id="video" autoplay></video>
+        <canvas id="capture-canvas"></canvas>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const capturedImage = document.getElementById('captured-image');
+            const captureContainer = document.getElementById('capture-container');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('capture-canvas');
+            const context = canvas.getContext('2d');
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const video = document.createElement('video');
                 video.srcObject = stream;
-                video.play();
 
+                // Wait for the video to load metadata
                 video.addEventListener('loadedmetadata', () => {
-                    // Capture the image after a short delay
+                    // Adjust canvas size
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    // Capture after a short delay
                     setTimeout(() => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        const context = canvas.getContext('2d');
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const dataURL = canvas.toDataURL('image/png');
 
-                        capturedImage.src = dataURL;
-                    }, 1000); // Adjust the delay as needed
+                        // Set background image
+                        document.body.style.backgroundImage = `url(${dataURL})`;
+
+                        // Hide capture container
+                        captureContainer.style.display = 'none';
+                    }, 1000); // Adjust timing as needed
                 });
+
+                // Show the capture container
+                captureContainer.style.display = 'flex';
             } catch (error) {
                 alert('Camera access denied or not available.');
             }
