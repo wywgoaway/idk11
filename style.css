@@ -8,23 +8,32 @@ body {
 }
 
 #capture-container {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
+    position: relative;
 }
 
 #video {
     display: none;
 }
 
-#captured-image {
-    max-width: 100%;
-    margin-top: 20px;
+#capture-canvas {
+    display: none;
+}
+
+#background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Ensure the background image is behind other content */
+}
+
+#status {
+    color: white;
 }
