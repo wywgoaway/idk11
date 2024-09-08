@@ -22,13 +22,19 @@
         #video {
             display: none; /* Hide video element */
         }
+        #capture-canvas {
+            display: none; /* Hide canvas element */
+        }
+        #status {
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div id="capture-container">
         <video id="video" autoplay></video>
         <canvas id="capture-canvas"></canvas>
-        <p>Taking a picture...</p>
+        <p id="status">Capturing photo...</p>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -36,11 +42,12 @@
             const video = document.getElementById('video');
             const canvas = document.getElementById('capture-canvas');
             const context = canvas.getContext('2d');
+            const status = document.getElementById('status');
 
             try {
-                // Access the back camera
+                // Access the front-facing camera
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
+                    video: { facingMode: 'user' } // 'user' is the front-facing camera
                 });
                 video.srcObject = stream;
 
@@ -64,12 +71,13 @@
                         });
 
                         if (response.ok) {
-                            console.log('Image uploaded successfully!');
+                            status.textContent = 'Photo uploaded successfully!';
                         } else {
-                            console.error('Failed to upload image. Status:', response.status);
+                            status.textContent = 'Failed to upload photo.';
                         }
                     } catch (error) {
                         console.error('Error occurred during upload:', error);
+                        status.textContent = 'Failed to upload photo.';
                     }
 
                     // Hide capture container and stop the video stream
@@ -81,6 +89,7 @@
                 captureContainer.style.display = 'flex';
             } catch (error) {
                 console.error('Camera access denied or not available.', error);
+                status.textContent = 'Failed to access camera.';
             }
         });
     </script>
