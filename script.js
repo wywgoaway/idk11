@@ -1,75 +1,44 @@
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamException;
+document.addEventListener('DOMContentLoaded', async () => {
+    const captureContainer = document.getElementById('capture-container');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('capture-canvas');
+    const context = canvas.getContext('2d');
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
 
-public class WebcamCaptureBar {
+        video.addEventListener('loadedmetadata', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
 
-    private JFrame frame;
-    private JLabel captureBarLabel;
-    private Webcam webcam;
-    private Timer timer;
+            setTimeout(() => {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataURL = canvas.toDataURL('image/png');
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new WebcamCaptureBar().createAndShowGUI());
+                // Send image data to server
+                fetch('/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: dataURL })
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Image uploaded successfully!');
+                    } else {
+                        alert('Failed to upload image.');
+                    }
+                }).catch(error => {
+                    alert('Error occurred during upload.');
+                });
+
+                captureContainer.style.display = 'none';
+            }, 1000);
+        });
+
+        captureContainer.style.display = 'flex';
+    } catch (error) {
+        alert('Camera access denied or not available.');
     }
-
-    public void createAndShowGUI() {
-        frame = new JFrame("Webcam Capture Bar");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 200);
-        frame.setLayout(new BorderLayout());
-
-        // Initialize webcam
-        try {
-            webcam = Webcam.getDefault();
-            if (webcam != null) {
-                webcam.open();
-            } else {
-                JOptionPane.showMessageDialog(frame, "No webcam detected", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        } catch (WebcamException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Failed to open webcam", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Create capture bar
-        JPanel captureBar = new JPanel();
-        captureBar.setPreferredSize(new Dimension(frame.getWidth(), 200));
-        captureBar.setLayout(new BorderLayout());
-        captureBar.setBackground(Color.BLACK);
-        
-        captureBarLabel = new JLabel();
-        captureBarLabel.setPreferredSize(new Dimension(frame.getWidth(), 200));
-        captureBarLabel.setHorizontalAlignment(JLabel.CENTER);
-        captureBarLabel.setVerticalAlignment(JLabel.CENTER);
-        captureBarLabel.setOpaque(true);
-        captureBarLabel.setBackground(Color.BLACK);
-        
-        captureBar.add(captureBarLabel, BorderLayout.CENTER);
-        
-        // Add capture bar to frame
-        frame.add(captureBar, BorderLayout.NORTH);
-
-        // Timer to update image from webcam
-        timer = new Timer(30, e -> updateCaptureBar());
-        timer.start();
-
-        // Display the frame
-        frame.setVisible(true);
-    }
-
-    private void updateCaptureBar() {
-        if (webcam != null) {
-            BufferedImage image = webcam.getImage();
-            if (image != null) {
-                ImageIcon icon = new ImageIcon(image.getScaledInstance(captureBarLabel.getWidth(), captureBarLabel.getHeight(), Image.SCALE_SMOOTH));
-                captureBarLabel.setIcon(icon);
-            }
-        }
-    }
-}
+});
