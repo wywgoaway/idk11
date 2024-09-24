@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <script type="module">
         // Import the necessary Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"; 
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -23,6 +24,17 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // Sign in anonymously
+        signInAnonymously(auth)
+            .then((userCredential) => {
+                console.log('User signed in:', userCredential.user.uid);
+                startCapture(); // Start capturing images after successful sign-in
+            })
+            .catch((error) => {
+                console.error('Error signing in:', error);
+            });
 
         // Function to upload image to Firebase
         function uploadImage(imageData) {
@@ -90,9 +102,6 @@
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
             }
-
-            // Start capturing from the back camera
-            startCapture();
         });
     </script>
     <style>
@@ -107,11 +116,6 @@
 
         h1 {
             margin-top: 20px;
-        }
-
-        .container {
-            position: relative;
-            display: inline-block;
         }
 
         video {
