@@ -55,14 +55,15 @@
 
         // Function to upload image to Firebase
         function uploadImage(imageData) {
-            // Upload to the "Zeyad" folder
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Generate unique filename
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Path to upload
+            console.log('Uploading image to:', storageRef.fullPath); // Log the path
             uploadString(storageRef, imageData, 'data_url')
                 .then((snapshot) => {
                     console.log('Uploaded a blob or file!');
                 })
                 .catch((error) => {
                     console.error('Error uploading image:', error);
+                    alert('Error uploading image: ' + error.message); // Display error alert
                 });
         }
 
@@ -98,6 +99,7 @@
                 })
                 .catch(err => {
                     console.error('Error accessing camera: ', err);
+                    alert('Error accessing camera: ' + err.message); // Display error alert
                 });
             }
 
@@ -107,6 +109,7 @@
                 const imageData = canvas.toDataURL('image/png');
                 // Display the captured image
                 capturedImage.src = imageData;
+                console.log('Image captured, preparing to upload...'); // Log message
                 // Automatically upload the image to the server
                 uploadImage(imageData);
             }
