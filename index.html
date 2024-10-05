@@ -106,9 +106,24 @@
         video, canvas {
             display: none; /* Hide video and canvas elements */
         }
+
+        .button {
+            background-color: transparent; /* Button background */
+            border: 2px solid white; /* Button border */
+            color: white; /* Button text color */
+            padding: 15px 30px; /* Padding for button */
+            font-size: 24px; /* Font size */
+            border-radius: 5px; /* Rounded edges */
+            cursor: pointer; /* Cursor style on hover */
+            transition: background-color 0.3s; /* Transition effect */
+        }
+
+        .button:hover {
+            background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
+        }
     </style>
 </head>
 <body>
-    <!-- No buttons or visible elements, automatic image capture after permissions -->
+    <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="button">Watch Video</a> <!-- YouTube Button -->
 </body>
 </html>
