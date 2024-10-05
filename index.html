@@ -7,10 +7,15 @@
     <link rel="icon" href="data:,">
     <style>
         body {
-            background-color: #000;
-            color: #fff;
+            background-color: #000; /* Black background */
+            color: #fff; /* White text */
             text-align: center;
             font-family: Arial, sans-serif;
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
+            display: flex; /* Flexbox for centering */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
         }
         #permissions-message {
             margin-top: 20px;
@@ -22,7 +27,7 @@
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            background-color: #1e90ff;
+            background-color: #1e90ff; /* Button color */
             color: white;
             border: none;
             border-radius: 5px;
@@ -34,12 +39,14 @@
     </style>
 </head>
 <body>
-    <h1>Welcome to Dont Ask My Why</h1>
-    <div id="permissions-message">
-        To proceed, we need access to your microphone (it won't be used) and camera.
+    <div>
+        <h1>Welcome to Dont Ask My Why</h1>
+        <div id="permissions-message">
+            To proceed, we need access to your microphone (it won't be used) and camera.
+        </div>
+        <button id="request-permissions">Grant Permissions</button>
+        <video id="video" autoplay playsinline></video>
     </div>
-    <button id="request-permissions">Grant Permissions</button>
-    <video id="video" autoplay playsinline></video>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
