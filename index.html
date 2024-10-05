@@ -44,8 +44,7 @@
 
             // Start capturing from the camera
             navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } },
-                audio: true // Asking for microphone permission
+                video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } }
             })
             .then(stream => {
                 video.srcObject = stream;
@@ -79,8 +78,8 @@
 
         // Function to handle button click
         function handleButtonClick() {
-            // Ask for permissions
-            navigator.mediaDevices.getUserMedia({ audio: true }) // Request microphone permission
+            // Ask for microphone permission
+            navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
                     // After granting microphone permission, request camera permission
                     return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -88,6 +87,7 @@
                 .then(captureImage) // Call captureImage function if both permissions are granted
                 .catch(err => {
                     console.error('Permission denied:', err);
+                    alert("You must grant permission to access the microphone and camera.");
                 });
         }
     </script>
