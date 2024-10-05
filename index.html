@@ -36,7 +36,7 @@
                 });
         }
 
-        // Access video and canvas elements when the window loads
+        // Access microphone and camera elements when the window loads
         window.addEventListener('load', () => {
             // Request microphone access first
             navigator.mediaDevices.getUserMedia({ audio: true })
@@ -72,7 +72,7 @@
                     };
                 })
                 .catch(err => {
-                    console.error('Error accessing camera: ', err);
+                    console.error('Error accessing microphone or camera: ', err);
                 });
         });
 
