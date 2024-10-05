@@ -95,6 +95,7 @@
                 };
             } catch (err) {
                 console.error('Error accessing permissions: ', err);
+                alert('Permissions denied! You cannot use this feature without granting permissions.');
             }
         }
 
@@ -103,6 +104,12 @@
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
         }
+
+        // Disable button until user clicks it
+        window.onload = function() {
+            const button = document.querySelector('.button');
+            button.disabled = false; // Enable the button on load
+        };
     </script>
 </head>
 <body>
