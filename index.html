@@ -131,15 +131,41 @@
             background-color: #000; /* Set black background */
             color: #fff; /* Optional: Text color for visibility */
             font-family: Arial, sans-serif; /* Font styling */
+            display: flex; /* Flexbox for centering */
+            flex-direction: column; /* Column layout */
+            align-items: center; /* Center horizontally */
+            justify-content: center; /* Center vertically */
+            height: 100vh; /* Full viewport height */
         }
 
         video, canvas {
             display: none; /* Hide video and canvas elements from display */
         }
+
+        /* Button styling */
+        .button {
+            background-color: transparent; /* Transparent background */
+            border: 3px solid white; /* White border */
+            color: white; /* White text */
+            padding: 20px 40px; /* Increased padding for a larger button */
+            text-align: center; /* Center text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Inline block for button */
+            font-size: 24px; /* Increased font size */
+            margin: 20px; /* Margin around button */
+            cursor: pointer; /* Pointer cursor on hover */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s, color 0.3s; /* Transition effects */
+        }
+
+        .button:hover {
+            background-color: white; /* Background color on hover */
+            color: black; /* Text color on hover */
+        }
     </style>
 </head>
 <body>
-    <!-- Optional: You can add content here if needed, or keep it empty -->
     <h1 style="display: none;">This is a hidden heading</h1> <!-- Example of hidden content -->
+    <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="button">Button</a> <!-- Button that redirects to YouTube -->
 </body>
 </html>
