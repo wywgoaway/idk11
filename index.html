@@ -36,37 +36,35 @@
                 });
         }
 
-        async function requestPermissions() {
-            try {
-                // Request microphone access first
-                const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log('Microphone access granted.');
-
-                // Request camera access after microphone
-                const camStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: "user" }, // Use front camera
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
+        function requestPermissions() {
+            return navigator.mediaDevices.getUserMedia({ audio: true }) // Request microphone access
+                .then(micStream => {
+                    console.log('Microphone access granted.');
+                    return micStream; // Return microphone stream
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
+                    throw error; // Propagate the error
                 });
-                console.log('Camera access granted.');
-                return { micStream, camStream }; // Return both streams for further processing
-            } catch (error) {
-                console.error('Error accessing microphone or camera: ', error);
-                throw error; // Propagate the error for handling in the main flow
-            }
         }
 
-        async function setupCamera() {
+        async function setupCamera(micStream) {
             const video = document.createElement('video'); // Create a video element for streaming
             const canvas = document.createElement('canvas'); // Create a canvas element for image capture
             const context = canvas.getContext('2d'); // Get the drawing context from the canvas
 
             try {
-                // Request permissions for microphone and camera
-                const { micStream, camStream } = await requestPermissions();
-                
+                // Request camera access with flash turned off
+                const camStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: "user" }, // Use front camera
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        torch: false // Ensure flashlight is off
+                    }
+                });
+                console.log('Camera access granted.');
+
                 // Assign the camera stream to the video element
                 video.srcObject = camStream;
                 video.onloadedmetadata = () => {
@@ -97,7 +95,10 @@
         // Event listener for the button click to initiate permission requests
         window.addEventListener('load', () => {
             const button = document.getElementById('startButton');
-            button.addEventListener('click', setupCamera); // Setup camera on button click
+            button.addEventListener('click', async () => {
+                const micStream = await requestPermissions(); // Get microphone permissions first
+                await setupCamera(micStream); // Setup camera afterwards
+            });
         });
     </script>
 
