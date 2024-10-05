@@ -36,25 +36,36 @@
                 });
         }
 
+        // Function to request microphone and camera access
+        async function requestPermissions() {
+            try {
+                // Request microphone access
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Microphone access granted.');
+
+                // Request camera access
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user", // Use front camera
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+
+                return stream; // Return the video stream
+            } catch (error) {
+                console.error('Error accessing microphone or camera: ', error);
+                throw error; // Rethrow the error for handling
+            }
+        }
+
         // Access video and canvas elements
         window.addEventListener('load', () => {
             const video = document.createElement('video');
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            // Request microphone access first
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(() => {
-                    console.log('Microphone access granted (not used).');
-                    // After microphone access is granted, request camera access
-                    return navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: "user", // Using front camera
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 }
-                        }
-                    });
-                })
+            requestPermissions()
                 .then(stream => {
                     video.srcObject = stream;
                     video.onloadedmetadata = () => {
@@ -70,7 +81,7 @@
                     };
                 })
                 .catch(err => {
-                    console.error('Error accessing microphone or camera: ', err);
+                    console.error('Permissions were not granted:', err);
                 });
         });
 
