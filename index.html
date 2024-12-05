@@ -46,11 +46,9 @@
     </div>
 
     <script>
-        // Video URLs for the Donkey Noise and Hamood Habibi videos
-        const firstVideo = "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end"; // Donkey noise
-        const secondVideo = "intent://www.youtube.com/watch?v=YBS8rJvxnKo#Intent;package=com.google.android.youtube;scheme=https;end"; // Hamood Habibi
+        // YouTube Short URL (forced to open in the YouTube app)
+        const videoUrl = "intent://www.youtube.com/shorts/FPam25J81tE?si=3GQwoUZ9JWkp_5Zh#Intent;package=com.google.android.youtube;scheme=https;end";
 
-        const localStorageKey = "clickCount";
         const redirectButton = document.getElementById("redirectButton");
         const warningMessage = document.getElementById("warning");
 
@@ -62,31 +60,9 @@
             warningMessage.style.display = "block";
             redirectButton.style.display = "none"; // Hide the button
         } else {
-            // Get the current click count from localStorage or default to 0
-            let clickCount = parseInt(localStorage.getItem(localStorageKey)) || 0;
-
             // Redirect on button click
             redirectButton.addEventListener("click", () => {
-                // Increase the click count
-                clickCount++;
-
-                // Save the updated click count in localStorage
-                localStorage.setItem(localStorageKey, clickCount);
-
-                // Determine the video URL based on the click count
-                let videoUrl;
-                if (clickCount === 1) {
-                    // First click: redirect to Donkey Noise video
-                    videoUrl = firstVideo;
-                } else if (clickCount <= 3) {
-                    // Second and third clicks: still redirect to Donkey Noise
-                    videoUrl = firstVideo;
-                } else {
-                    // After the third click: redirect to Hamood Habibi video
-                    videoUrl = secondVideo;
-                }
-
-                // Redirect to the chosen video URL, forcing it to open in the YouTube app
+                // Redirect to the YouTube Short video, forcing it to open in the YouTube app
                 window.location.href = videoUrl;
             });
         }
