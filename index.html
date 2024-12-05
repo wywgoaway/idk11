@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirect Button</title>
+    <title>Yahmaar</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,36 +20,21 @@
             text-align: center;
         }
 
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        .video {
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-            margin-bottom: 20px;
-        }
-
         .btn {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #4CAF50; /* Green button */
+            border-radius: 10px;
+            background-color: #f44336; /* Red button */
             color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Click the Button to Watch a Video</h1>
-        <video class="video" controls>
-            <source src="" type="video/mp4" id="videoSource">
-            Your browser does not support the video tag.
-        </video>
-        <button class="btn" id="redirectButton">Watch on YouTube</button>
+        <button class="btn" id="redirectButton">Yahmaar ga klikken</button>
     </div>
 
     <script>
@@ -61,15 +46,9 @@
 
         const localStorageKey = "videoClicked";
         const redirectButton = document.getElementById("redirectButton");
-        const videoElement = document.querySelector("video");
 
-        // Check if the button was clicked before
+        // Determine the video URL based on previous clicks
         const videoIndex = localStorage.getItem(localStorageKey) === "true" ? 1 : 0;
-
-        // Set the video source
-        const videoSource = document.getElementById("videoSource");
-        videoSource.src = `https://www.youtube.com/embed/${youtubeLinks[videoIndex].split("=")[1]}`;
-        videoElement.load();
 
         // Redirect on button click
         redirectButton.addEventListener("click", () => {
