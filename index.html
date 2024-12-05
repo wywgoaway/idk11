@@ -38,12 +38,12 @@
     </div>
 
     <script>
-        // Array of trolling video URLs
+        // Array of trolling video deep links for the YouTube app
         const youtubeLinks = [
-            "https://youtu.be/3U6E6TEoPoA?si=6TtmpUURNX75BS64", // Donkey noise
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rickroll
-            "https://www.youtube.com/watch?v=aZZMj3Xs6mc", // Hamood Habibi
-            "https://www.youtube.com/watch?v=YXnjy5YlDwk"  // Bombaclaat
+            "youtube://www.youtube.com/watch?v=3U6E6TEoPoA", // Donkey noise
+            "youtube://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rickroll
+            "youtube://www.youtube.com/watch?v=aZZMj3Xs6mc", // Hamood Habibi
+            "youtube://www.youtube.com/watch?v=YXnjy5YlDwk"  // Bombaclaat
         ];
 
         const localStorageKey = "buttonClicked";
@@ -64,9 +64,5 @@
             // Mark as clicked in localStorage
             localStorage.setItem(localStorageKey, "true");
 
-            // Redirect to YouTube
-            window.location.href = videoUrl;
-        });
-    </script>
-</body>
-</html>
+            // Redirect to the YouTube app
+            window.location
