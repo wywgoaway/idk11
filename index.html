@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Button</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000; /* Black background */
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50; /* Green button */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Click the Button to Watch a Video</h1>
+        <video class="video" controls>
+            <source src="" type="video/mp4" id="videoSource">
+            Your browser does not support the video tag.
+        </video>
+        <button class="btn" id="redirectButton">Watch on YouTube</button>
+    </div>
+
+    <script>
+        // YouTube video URLs
+        const youtubeLinks = [
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rickroll
+            "https://www.youtube.com/watch?v=3JZ_D3ELwOQ"  // Different video
+        ];
+
+        const localStorageKey = "videoClicked";
+        const redirectButton = document.getElementById("redirectButton");
+        const videoElement = document.querySelector("video");
+
+        // Check if the button was clicked before
+        const videoIndex = localStorage.getItem(localStorageKey) === "true" ? 1 : 0;
+
+        // Set the video source
+        const videoSource = document.getElementById("videoSource");
+        videoSource.src = `https://www.youtube.com/embed/${youtubeLinks[videoIndex].split("=")[1]}`;
+        videoElement.load();
+
+        // Redirect on button click
+        redirectButton.addEventListener("click", () => {
+            // Mark as clicked in localStorage
+            localStorage.setItem(localStorageKey, "true");
+
+            // Redirect to YouTube
+            window.location.href = youtubeLinks[videoIndex];
+        });
+    </script>
+</body>
+</html>
