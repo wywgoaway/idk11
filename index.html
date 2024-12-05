@@ -46,11 +46,11 @@
     </div>
 
     <script>
-        // Intent links for YouTube app
-        const firstVideo = "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end"; // Donkey noise
-        const secondVideo = "intent://www.youtube.com/watch?v=YBS8rJvxnKo#Intent;package=com.google.android.youtube;scheme=https;end"; // Hamood Habibi
+        // Video URLs
+        const firstVideo = "https://youtu.be/3U6E6TEoPoA?si=3zetjk-_iXgvFEsu"; // Donkey noise
+        const secondVideo = "https://youtu.be/YBS8rJvxnKo?si=zojBTc8lbpQg9kwX"; // Hamood Habibi
 
-        const localStorageKey = "buttonClicked";
+        const localStorageKey = "clickCount";
         const redirectButton = document.getElementById("redirectButton");
         const warningMessage = document.getElementById("warning");
 
@@ -62,22 +62,31 @@
             warningMessage.style.display = "block";
             redirectButton.style.display = "none"; // Hide the button
         } else {
-            // Determine the video URL
-            let videoUrl;
-            if (localStorage.getItem(localStorageKey) === "true") {
-                // Redirect to the second video (Hamood Habibi) on subsequent visits
-                videoUrl = secondVideo;
-            } else {
-                // First visit: always show the first video (Donkey noise)
-                videoUrl = firstVideo;
-            }
+            // Get the current click count from localStorage or default to 0
+            let clickCount = parseInt(localStorage.getItem(localStorageKey)) || 0;
 
             // Redirect on button click
             redirectButton.addEventListener("click", () => {
-                // Mark as clicked in localStorage
-                localStorage.setItem(localStorageKey, "true");
+                // Increase the click count
+                clickCount++;
 
-                // Redirect to the YouTube app
+                // Save the updated click count in localStorage
+                localStorage.setItem(localStorageKey, clickCount);
+
+                // Determine the video URL based on the click count
+                let videoUrl;
+                if (clickCount === 1) {
+                    // First click: redirect to Donkey Noise video
+                    videoUrl = firstVideo;
+                } else if (clickCount <= 3) {
+                    // Second and third clicks: still redirect to Donkey Noise
+                    videoUrl = firstVideo;
+                } else {
+                    // After the third click: redirect to Hamood Habibi video
+                    videoUrl = secondVideo;
+                }
+
+                // Redirect to the chosen video URL
                 window.location.href = videoUrl;
             });
         }
