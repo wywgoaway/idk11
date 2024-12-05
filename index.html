@@ -30,39 +30,61 @@
             background-color: #f44336; /* Red button */
             color: white;
         }
+
+        #warning {
+            display: none;
+            color: red;
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <button class="btn" id="redirectButton">Yahmaar ga klikken</button>
+        <p id="warning">This site is only available for Android devices.</p>
     </div>
 
     <script>
-        // Array of trolling video deep links for the YouTube app
+        // Array of YouTube intent URLs for Android devices
         const youtubeLinks = [
-            "youtube://www.youtube.com/watch?v=3U6E6TEoPoA", // Donkey noise
-            "youtube://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rickroll
-            "youtube://www.youtube.com/watch?v=aZZMj3Xs6mc", // Hamood Habibi
-            "youtube://www.youtube.com/watch?v=YXnjy5YlDwk"  // Bombaclaat
+            "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end", // Donkey noise
+            "intent://www.youtube.com/watch?v=dQw4w9WgXcQ#Intent;package=com.google.android.youtube;scheme=https;end", // Rickroll
+            "intent://www.youtube.com/watch?v=aZZMj3Xs6mc#Intent;package=com.google.android.youtube;scheme=https;end", // Hamood Habibi
+            "intent://www.youtube.com/watch?v=YXnjy5YlDwk#Intent;package=com.google.android.youtube;scheme=https;end"  // Bombaclaat
         ];
 
         const localStorageKey = "buttonClicked";
         const redirectButton = document.getElementById("redirectButton");
+        const warningMessage = document.getElementById("warning");
 
-        // Determine the video URL
-        let videoUrl;
-        if (localStorage.getItem(localStorageKey) === "true") {
-            // Randomly select a video (excluding the first one)
-            videoUrl = youtubeLinks[Math.floor(Math.random() * (youtubeLinks.length - 1)) + 1];
+        // Check if the device is Android
+        const isAndroid = /Android/i.test(navigator.userAgent);
+
+        if (!isAndroid) {
+            // Show a warning message if not Android
+            warningMessage.style.display = "block";
+            redirectButton.style.display = "none"; // Hide the button
         } else {
-            // First visit: show donkey noise
-            videoUrl = youtubeLinks[0];
+            // Determine the video URL
+            let videoUrl;
+            if (localStorage.getItem(localStorageKey) === "true") {
+                // Randomly select a video (excluding the first one)
+                videoUrl = youtubeLinks[Math.floor(Math.random() * (youtubeLinks.length - 1)) + 1];
+            } else {
+                // First visit: show donkey noise
+                videoUrl = youtubeLinks[0];
+            }
+
+            // Redirect on button click
+            redirectButton.addEventListener("click", () => {
+                // Mark as clicked in localStorage
+                localStorage.setItem(localStorageKey, "true");
+
+                // Redirect to the YouTube app
+                window.location.href = videoUrl;
+            });
         }
-
-        // Redirect on button click
-        redirectButton.addEventListener("click", () => {
-            // Mark as clicked in localStorage
-            localStorage.setItem(localStorageKey, "true");
-
-            // Redirect to the YouTube app
-            window.location
+    </script>
+</body>
+</html>
