@@ -47,12 +47,8 @@
 
     <script>
         // Intent links for YouTube app
-        const youtubeLinks = [
-            "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end", // Donkey noise
-            "intent://www.youtube.com/watch?v=dQw4w9WgXcQ#Intent;package=com.google.android.youtube;scheme=https;end", // Rickroll
-            "intent://www.youtube.com/watch?v=aZZMj3Xs6mc#Intent;package=com.google.android.youtube;scheme=https;end", // Hamood Habibi
-            "intent://www.youtube.com/watch?v=YXnjy5YlDwk#Intent;package=com.google.android.youtube;scheme=https;end"  // Bombaclaat
-        ];
+        const firstVideo = "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end"; // Donkey noise
+        const secondVideo = "intent://www.youtube.com/watch?v=YBS8rJvxnKo#Intent;package=com.google.android.youtube;scheme=https;end"; // Hamood Habibi
 
         const localStorageKey = "buttonClicked";
         const redirectButton = document.getElementById("redirectButton");
@@ -69,11 +65,11 @@
             // Determine the video URL
             let videoUrl;
             if (localStorage.getItem(localStorageKey) === "true") {
-                // Randomly select a video (excluding the first one)
-                videoUrl = youtubeLinks[Math.floor(Math.random() * (youtubeLinks.length - 1)) + 1];
+                // Redirect to the second video on subsequent visits
+                videoUrl = secondVideo;
             } else {
-                // First visit: always show donkey noise
-                videoUrl = youtubeLinks[0];
+                // First visit: always show the first video
+                videoUrl = firstVideo;
             }
 
             // Redirect on button click
