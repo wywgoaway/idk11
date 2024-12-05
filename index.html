@@ -38,17 +38,26 @@
     </div>
 
     <script>
-        // YouTube video URLs
+        // Array of trolling video URLs
         const youtubeLinks = [
+            "https://youtu.be/3U6E6TEoPoA?si=6TtmpUURNX75BS64", // Donkey noise
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rickroll
-            "https://www.youtube.com/watch?v=3JZ_D3ELwOQ"  // Different video
+            "https://www.youtube.com/watch?v=aZZMj3Xs6mc", // Hamood Habibi
+            "https://www.youtube.com/watch?v=YXnjy5YlDwk"  // Bombaclaat
         ];
 
-        const localStorageKey = "videoClicked";
+        const localStorageKey = "buttonClicked";
         const redirectButton = document.getElementById("redirectButton");
 
-        // Determine the video URL based on previous clicks
-        const videoIndex = localStorage.getItem(localStorageKey) === "true" ? 1 : 0;
+        // Determine the video URL
+        let videoUrl;
+        if (localStorage.getItem(localStorageKey) === "true") {
+            // Randomly select a video (excluding the first one)
+            videoUrl = youtubeLinks[Math.floor(Math.random() * (youtubeLinks.length - 1)) + 1];
+        } else {
+            // First visit: show donkey noise
+            videoUrl = youtubeLinks[0];
+        }
 
         // Redirect on button click
         redirectButton.addEventListener("click", () => {
@@ -56,7 +65,7 @@
             localStorage.setItem(localStorageKey, "true");
 
             // Redirect to YouTube
-            window.location.href = youtubeLinks[videoIndex];
+            window.location.href = videoUrl;
         });
     </script>
 </body>
