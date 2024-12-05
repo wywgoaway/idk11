@@ -46,7 +46,7 @@
     </div>
 
     <script>
-        // Array of YouTube intent URLs for Android devices
+        // Intent links for YouTube app
         const youtubeLinks = [
             "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end", // Donkey noise
             "intent://www.youtube.com/watch?v=dQw4w9WgXcQ#Intent;package=com.google.android.youtube;scheme=https;end", // Rickroll
@@ -72,7 +72,7 @@
                 // Randomly select a video (excluding the first one)
                 videoUrl = youtubeLinks[Math.floor(Math.random() * (youtubeLinks.length - 1)) + 1];
             } else {
-                // First visit: show donkey noise
+                // First visit: always show donkey noise
                 videoUrl = youtubeLinks[0];
             }
 
