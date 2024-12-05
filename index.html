@@ -47,8 +47,8 @@
 
     <script>
         // Video URLs
-        const firstVideo = "https://youtu.be/3U6E6TEoPoA?si=3zetjk-_iXgvFEsu"; // Donkey noise
-        const secondVideo = "https://youtu.be/YBS8rJvxnKo?si=zojBTc8lbpQg9kwX"; // Hamood Habibi
+        const firstVideo = "intent://www.youtube.com/watch?v=3U6E6TEoPoA#Intent;package=com.google.android.youtube;scheme=https;end"; // Donkey noise
+        const secondVideo = "intent://www.youtube.com/watch?v=YBS8rJvxnKo#Intent;package=com.google.android.youtube;scheme=https;end"; // Hamood Habibi
 
         const localStorageKey = "clickCount";
         const redirectButton = document.getElementById("redirectButton");
@@ -86,7 +86,7 @@
                     videoUrl = secondVideo;
                 }
 
-                // Redirect to the chosen video URL
+                // Redirect to the chosen video URL, forcing it to open in the YouTube app
                 window.location.href = videoUrl;
             });
         }
